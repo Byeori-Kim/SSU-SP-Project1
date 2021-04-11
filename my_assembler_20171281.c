@@ -44,7 +44,7 @@ int main(int args, char* arg[])
 		return -1;
 	}
 
-	make_opcode_output("output_20171281");
+	make_opcode_output("output_20171281.txt");
 
 	/*
 	 * 추후 프로젝트에서 사용되는 부분
@@ -72,7 +72,7 @@ int main(int args, char* arg[])
  */
 int init_my_assembler(void)
 {
-	int result;
+	int result=0;
 
 	if ((result = init_inst_file("inst.data")) < 0)
 		return -1;
@@ -98,7 +98,7 @@ int init_inst_file(char* inst_file)
 {
 	FILE* file;
 	int errno;
-	unsigned int len = 99;
+	int len = 99;
 	char* line = malloc(len);
 	file = fopen(inst_file, "r");
 	memset(&inst_table, 0, sizeof(inst_table));
@@ -162,14 +162,22 @@ int init_input_file(char* input_file)
 {
 	FILE* file;
 	int errno;
+	int num = 0;
+	int len = 99;
+	char* line = malloc(len);
 
 	file = fopen(input_file, "r");
 
 	if (file==NULL) errno = -1; //file is not opened
 
 	else {
-
-	
+		while (fscanf(file, "%[^\n]\n", line) != EOF) {
+			//input_data[num] = line;
+			strncpy(&(input_data[num]), &line, len);
+			printf("%s\n", input_data[num]);
+			num++;
+		}
+		errno = 0;
 	}
 
 	return errno;
