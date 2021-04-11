@@ -15,7 +15,8 @@ struct inst_unit
 {
 	char str[10];
 	unsigned char op;
-	int format;
+	int format1;
+	int format2;
 	int ops;
 };
 typedef struct inst_unit inst;

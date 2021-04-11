@@ -10,11 +10,14 @@
   * 프로그램의 헤더를 정의한다.
   *
   */
-
+#define _GNU_SOURCE
+// #define _CRT_SECURE_NO_WARNUNGS
+#pragma warning(disable: 4996)
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
+
 
   // 파일명의 "00000000"은 자신의 학번으로 변경할 것.
 #include "my_assembler_20171281.h"
@@ -95,8 +98,54 @@ int init_inst_file(char* inst_file)
 {
 	FILE* file;
 	int errno;
+	unsigned int len = 99;
+	char* line = malloc(len);
+	file = fopen(inst_file, "r");
+	memset(&inst_table, 0, sizeof(inst_table));
+	inst_index = 0;
 
-	/* add your code here */
+	if (file == NULL) errno = -1;  // file is not opened
+
+	else {
+		while (fscanf(file, "%[^\n]\n", line) != EOF) {
+			struct inst_unit in = { 0 };
+
+			char* token;
+			int a = 0;
+			token = strtok(line, " ");
+
+			//printf("[%d]: %-6s  ", a++, token);
+			strncpy(in.str, token, sizeof(token) - 1);
+			token = strtok(NULL, " ");
+
+			//printf("[%d]: %-6s  ", a++, token);
+			in.format1 = *token - 48;
+			token = strtok(NULL, " ");
+
+			//printf("[%d]: %-6s  ", a++, token);
+			in.format2 = *token - 48;
+			token = strtok(NULL, " ");
+
+			//printf("[%d]: %-6s  ", a++, token);
+			in.op = ((token[2]-48)<<4) + (token[3]-48);
+			token = strtok(NULL, " ");
+
+			//printf("[%d]: %-6s  ", a++, token);
+			in.ops = *token - 48;
+			token = strtok(NULL, " ");
+
+			//printf("\n");
+
+			//printf("1. %s %d %d %u %d \n", in.str, in.format1, in.format2, in.op, in.ops);
+			((inst*)inst_table)[inst_index] = in;
+			//printf("2. %s %d %d %u %d \n", ((inst*)inst_table)[inst_index].str, ((inst*)inst_table)[inst_index].format1, ((inst*)inst_table)[inst_index].format2, ((inst*)inst_table)[inst_index].op, ((inst*)inst_table)[inst_index].ops);
+
+			inst_index++;
+			;
+		}
+		errno = 0;
+	}
+
 
 	return errno;
 }
@@ -114,7 +163,14 @@ int init_input_file(char* input_file)
 	FILE* file;
 	int errno;
 
-	/* add your code here */
+	file = fopen(input_file, "r");
+
+	if (file==NULL) errno = -1; //file is not opened
+
+	else {
+
+	
+	}
 
 	return errno;
 }
