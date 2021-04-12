@@ -174,7 +174,7 @@ int init_input_file(char* input_file)
 		while (fscanf(file, "%[^\n]\n", line) != EOF) {
 			//input_data[num] = line;
 			strncpy(&(input_data[num]), &line, len);
-			printf("%s\n", input_data[num]);
+			printf(" %s\n", input_data[num]);
 			num++;
 		}
 		errno = 0;
@@ -193,7 +193,44 @@ int init_input_file(char* input_file)
  */
 int token_parsing(char* str)
 {
-	/* add your code here */
+	char* tok;
+	struct token_unit tokunit;
+	if (str = ".") {  // comment 줄
+		strcpy(&tokunit.comment, &str);
+		return 0;
+	}
+	else if (str != "/t") {  // label이 있는 라인
+		tok = strtok(str, "\t");
+
+		strncpy(tokunit.label, tok, sizeof(tok) - 1);
+		tok = strtok(NULL, " ");
+
+		strncpy(tokunit.operator, tok, sizeof(tok) - 1);
+		tok = strtok(NULL, " ");
+
+		strncpy(tokunit.operand, tok, sizeof(tok) - 1);
+		tok = strtok(NULL, " ");
+
+		strncpy(tokunit.comment, tok, sizeof(tok) - 1);
+		tok = strtok(NULL, " ");
+		return 0;
+
+	}
+	else {  // label이 없는 라인
+		tok = strtok(str, "\t");
+
+		strncpy(tokunit.operator, tok, sizeof(tok) - 1);
+		tok = strtok(NULL, " ");
+
+		strncpy(tokunit.operand, tok, sizeof(tok) - 1);
+		tok = strtok(NULL, " ");
+
+		strncpy(tokunit.comment, tok, sizeof(tok) - 1);
+		tok = strtok(NULL, " ");
+		return 0;
+	}
+	((token*)token_table)[line_num] = tokunit;
+	line_num++;
 }
 
 /* ----------------------------------------------------------------------------------
@@ -206,7 +243,26 @@ int token_parsing(char* str)
  */
 int search_opcode(char* str)
 {
-	/* add your code here */
+	char* token;
+	int index = 0;
+	token = strtok(str, "\t");
+	if (token == "+") {
+		for (int i = 1; token[i]; i++) {
+			token[i - 1] = token[i];   // operator 앞에 + 붙어있을 경우 제거하고 서치
+		}
+	}
+	while (inst_table[index] != NULL) {  // label이 없는 경우
+		if (inst_table[index]->str == token) {
+			return index;
+		}
+	}
+	token = strtok(NULL, "\t");
+	while (inst_table[index] != NULL) {  // label이 있는 경우
+		if (inst_table[index]->str == token) {
+			return index;
+		}
+	}
+	return -1;
 }
 
 /* ----------------------------------------------------------------------------------
@@ -224,7 +280,7 @@ int search_opcode(char* str)
 */
 static int assem_pass1(void)
 {
-	/* add your code here */
+	
 
 	/* input_data의 문자열을 한줄씩 입력 받아서
 	 * token_parsing()을 호출하여 token_unit에 저장
