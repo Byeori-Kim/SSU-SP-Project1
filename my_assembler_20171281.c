@@ -43,6 +43,7 @@ int main(int args, char* arg[])
 		return -1;
 	}
 
+	//make_opcode_output(NULL);
 	make_opcode_output("output_20171281.txt");
 
 	/*
@@ -157,7 +158,7 @@ int init_input_file(char* input_file)
 {
 	FILE* file;
 	int errno;
-	int num = 0;
+	line_num = 0;
 	int len = 99;
 	char* line = malloc(len);
 
@@ -169,12 +170,10 @@ int init_input_file(char* input_file)
 	}																										//file is not opened
 	else {
 		while ( fgets(line, len, file) != NULL) {
-			//printf("%s \n", line);
-			input_data[num] = malloc(len);
-			if (line != 0 && input_data[num] != 0) strncpy((input_data[num]), line, len);
-
-			printf("%d: %s\n", num, input_data[num]);
-			num++;
+			line[strlen(line) - 1] = '\0';
+			input_data[line_num] = malloc(len);
+			if (line != 0 && input_data[line_num] != 0) strncpy((input_data[line_num]), line, len);
+			line_num++;
 		}
 		errno = 0;
 	}
@@ -200,13 +199,21 @@ int token_parsing(char* str)
 	token_table[token_line] = (token*)malloc(sizeof(token));
 	if (buf[0] == '.')
 	{
+		tok.label = "";
+		tok.operator = "";
+		int k, j = 0;																	
+		for (k = 0; k < MAX_OPERAND; k++)
+		{
+			*tok.operand[k] = malloc(20);												// operand 토큰 배열 공간 할당
+			memset(tok.operand[k], NULL, 20);											// operand 토큰 배열 초기화
+		}
 		strcpy(tok.comment, buf);
 		*token_table[token_line] = tok;
 		token_line++;
 		return 0;
 	}
 	temp = strtok(buf, "\t");
-	if (buf[0] != '\t')	// label 있을때
+	if (buf[0] != '\t')																				// label 있을때
 	{
 		tok.label = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));						// label token 공간 할당
 		strcpy(tok.label, temp);																	// label token 입력
@@ -218,13 +225,21 @@ int token_parsing(char* str)
 		temp = strtok(NULL, "\t");																	//다음 토큰 분리
 
 		int isop = search_opcode(tok.operator);														// 다음 토큰이 operand인지 comment인지 없는지 구분
-		if (isop >= 0)																				//operator 가 inst_file에 있는경우
+		opcode[token_line] = isop;																	// operator의 index 저장
+		if (isop >= 0)																				// operator 가 inst_file에 있는경우
 		{
-																									//operand 개수 확인 가능
-			if (inst_table[isop][0].ops == 0)														//operand가 0개일때 -> 다음 토큰 = comment or 없음 
+																									// operand 개수 확인 가능
+			if (inst_table[isop][0].ops == 0)														// operand가 0개일때 -> 다음 토큰 = comment or 없음 
 			{
 				if (temp == NULL)																	// 다음 토큰 없을때
 				{
+					strcpy(tok.comment, "");
+					int k, j = 0;																	// operand 분리
+					for (k = 0; k < MAX_OPERAND; k++)
+					{
+						*tok.operand[k] = malloc(20);												// operand 토큰 배열 공간 할당
+						memset(tok.operand[k], NULL, 20);											// operand 토큰 배열 초기화
+					}
 					*token_table[token_line] = tok;
 					token_line++;
 
@@ -232,6 +247,11 @@ int token_parsing(char* str)
 				}
 				else																				// 다음 토큰 = comment
 				{
+					for (int k = 0; k < MAX_OPERAND; k++)
+					{
+						*tok.operand[k] = malloc(20);												// operand 토큰 배열 공간 할당
+						memset(tok.operand[k], NULL, 20);											// operand 토큰 배열 초기화
+					}
 					*tok.comment = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));		// comment 토큰 공간 할당
 					strcpy(tok.comment, temp);														// comment 토큰 입력	
 					*token_table[token_line] = tok;
@@ -247,13 +267,13 @@ int token_parsing(char* str)
 
 
 				temp = strtok(NULL, "	");															//다음 토큰 분리
-				if (temp == NULL) // 다음 토큰 없을때
+				if (temp == NULL)																	// 다음 토큰 없을때
 				{
 					int k, j = 0;																	// operand 분리
 					for (k = 0; k < MAX_OPERAND; k++)
 					{
-						*tok.operand[k] = malloc(15);												// operand 토큰 배열 공간 할당
-						memset(tok.operand[k], NULL, 15);											// operand 토큰 배열 초기화
+						*tok.operand[k] = malloc(20);												// operand 토큰 배열 공간 할당
+						memset(tok.operand[k], NULL, 20);											// operand 토큰 배열 초기화
 					}
 					optemp = strtok(optemp, ",");													// operand 토큰 분리 및 입력 루틴
 					while (optemp != NULL)
@@ -266,20 +286,21 @@ int token_parsing(char* str)
 						if (strcmp(tok.operand[k], "") == 0)
 							*tok.operand[k] = NULL;
 					}
+					strcpy(tok.comment, "");
 					*token_table[token_line] = tok;
 					token_line++;
 					return 0;
 				}
 				else // 다음 토큰 = comment 
 				{
-					*tok.comment = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char)); // comment 토큰 공간 할당
-					strcpy(tok.comment, temp);											  	 // comment 토큰 입력
+					*tok.comment = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));		// comment 토큰 공간 할당
+					strcpy(tok.comment, temp);											  			// comment 토큰 입력
 
 					int k, j = 0;																	// operand 분리
 					for (k = 0; k < MAX_OPERAND; k++)
 					{
-						*tok.operand[k] = malloc(15);										//operand 토큰 배열 공간 할당
-						memset(tok.operand[k], NULL, 15);											// operand 토큰 배열 초기화
+						*tok.operand[k] = malloc(20);												// operand 토큰 배열 공간 할당
+						memset(tok.operand[k], NULL, 20);											// operand 토큰 배열 초기화
 					}
 					optemp = strtok(optemp, ",");													// operand 토큰 분리 및 입력 루틴
 					while (optemp != NULL)
@@ -304,6 +325,13 @@ int token_parsing(char* str)
 		{
 			if (temp == NULL)																		// inst_file 에 없는 operator이면서 operand와 comment모두 존재 하지 않을 경우
 			{
+				strcpy(tok.comment, "");
+				int k, j = 0;																	// operand 분리
+				for (k = 0; k < MAX_OPERAND; k++)
+				{
+					*tok.operand[k] = malloc(20);												// operand 토큰 배열 공간 할당
+					memset(tok.operand[k], NULL, 20);											// operand 토큰 배열 초기화
+				}
 				*token_table[token_line] = tok;
 				token_line++;
 				return 0;
@@ -317,8 +345,8 @@ int token_parsing(char* str)
 				int k, j = 0;																		//operand 분리
 				for (k = 0; k < MAX_OPERAND; k++)
 				{
-					*tok.operand[k] = malloc(15);
-					memset(tok.operand[k], NULL, 15);
+					*tok.operand[k] = malloc(20);
+					memset(tok.operand[k], NULL, 20);
 				}
 				optemp = strtok(optemp, ",");
 				while (optemp != NULL)
@@ -331,20 +359,21 @@ int token_parsing(char* str)
 					if (strcmp(tok.operand[k], "") == 0)
 						*tok.operand[k] = NULL;
 				}
+				strcpy(tok.comment, "");
 				*token_table[token_line] = tok;
 				token_line++;
 				return 0;
 			}
-			else // comment 있을때
+			else																					// comment 있을때
 			{
 				*tok.comment = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));
 				strcpy(tok.comment, temp);
 
-				int k, j = 0;										//operand 분리
+				int k, j = 0;																		// operand 분리
 				for (k = 0; k < MAX_OPERAND; k++)
 				{
-					*tok.operand[k] = malloc(15);
-					memset(tok.operand[k], NULL, 15);
+					*tok.operand[k] = malloc(20);
+					memset(tok.operand[k], NULL, 20);
 				}
 				optemp = strtok(optemp, ",");
 				while (optemp != NULL)
@@ -363,26 +392,43 @@ int token_parsing(char* str)
 	}
 	else if (buf[0] == '\t')
 	{
-		tok.label = NULL;
-		tok.operator=(char*)calloc(strlen(temp) / sizeof(char), sizeof(char));				 // operator parsing
+		tok.label = "";
+		tok.operator=(char*)calloc(strlen(temp) / sizeof(char), sizeof(char));						// operator parsing
 		strcpy(tok.operator, temp);
 
 		temp = strtok(NULL, "\t");
-		int isop = search_opcode(tok.operator);  // 다음 토큰이 operand인지 comment인지 없는지 구분
-		if (isop >= 0) //operator 가 inst_file에 있는경우
+		int isop = search_opcode(tok.operator);														// 다음 토큰이 operand인지 comment인지 없는지 구분
+		opcode[token_line] = isop;																	// operator의 index 저장
+
+		if (isop >= 0)																				//operator 가 inst_file에 있는경우
 		{
-			//operand 개수 확인 가능
-			if (inst_table[isop][0].ops == 0) //operand가 0개일때 -> 다음 토큰 = comment or 없음 
+																									//operand 개수 확인 가능
+			if (inst_table[isop][0].ops == 0)														//operand가 0개일때 -> 다음 토큰 = comment or 없음 
 			{
-				if (temp == NULL) // 다음 토큰 없을때
+				if (temp == NULL)																	// 다음 토큰 없을때
 				{
+					strcpy(tok.comment, "");
+					int k, j = 0;																	// operand 분리
+					for (k = 0; k < MAX_OPERAND; k++)
+					{
+						*tok.operand[k] = malloc(20);												// operand 토큰 배열 공간 할당
+						memset(tok.operand[k], NULL, 20);											// operand 토큰 배열 초기화
+					}
+					*token_table[token_line] = tok;
 					token_line++;
 					return 0;
 				}
-				else // 다음 토큰 = comment
+				else																				// 다음 토큰 = comment
 				{
-					*tok.comment = malloc(sizeof(temp)); // comment 토큰 공간 할당
-					strcpy(tok.comment, temp);												 // comment 토큰 입력	
+					strcpy(tok.comment, "");
+					int k, j = 0;																	// operand 분리
+					for (k = 0; k < MAX_OPERAND; k++)
+					{
+						*tok.operand[k] = malloc(20);												// operand 토큰 배열 공간 할당
+						memset(tok.operand[k], NULL, 20);											// operand 토큰 배열 초기화
+					}
+					*tok.comment = malloc(sizeof(temp));											// comment 토큰 공간 할당
+					strcpy(tok.comment, temp);														// comment 토큰 입력	
 					*token_table[token_line] = tok;
 					token_line++;
 					return 0;
@@ -396,13 +442,13 @@ int token_parsing(char* str)
 
 
 				temp = strtok(NULL, "\t");															//다음 토큰 분리
-				if (temp == NULL) // 다음 토큰 없을때
+				if (temp == NULL)																	// 다음 토큰 없을때
 				{
 					int k, j = 0;																	// operand 분리
 					for (k = 0; k < MAX_OPERAND; k++)
 					{
-						*tok.operand[k] = malloc(15);										// operand 토큰 배열 공간 할당
-						memset(tok.operand[k], NULL, 15);											// operand 토큰 배열 초기화
+						*tok.operand[k] = malloc(20);												// operand 토큰 배열 공간 할당
+						memset(tok.operand[k], NULL, 20);											// operand 토큰 배열 초기화
 					}
 					optemp = strtok(optemp, ",");													// operand 토큰 분리 및 입력 루틴
 					while (optemp != NULL)
@@ -415,20 +461,21 @@ int token_parsing(char* str)
 						if (strcmp(tok.operand[k], "") == 0)
 							*tok.operand[k] = NULL;
 					}
+					strcpy(tok.comment, "");
 					*token_table[token_line] = tok;
 					token_line++;
 					return 0;
 				}
 				else // 다음 토큰 = comment 
 				{
-					*tok.comment = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char)); // comment 토큰 공간 할당
-					strcpy(tok.comment, temp);											  	 // comment 토큰 입력
+					*tok.comment = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));		// comment 토큰 공간 할당
+					strcpy(tok.comment, temp);											  			// comment 토큰 입력
 
 					int k, j = 0;																	// operand 분리
 					for (k = 0; k < MAX_OPERAND; k++)
 					{
-						*tok.operand[k] = malloc(15);										// operand 토큰 배열 공간 할당
-						memset(tok.operand[k], NULL, 15);											// operand 토큰 배열 초기화
+						*tok.operand[k] = malloc(20);												// operand 토큰 배열 공간 할당
+						memset(tok.operand[k], NULL, 20);											// operand 토큰 배열 초기화
 
 					}
 					optemp = strtok(optemp, ",");													// operand 토큰 분리 및 입력 루틴
@@ -454,21 +501,28 @@ int token_parsing(char* str)
 		{
 			if (temp == NULL)																		// inst_file 에 없는 operator이면서 operand와 comment모두 존재 하지 않을 경우
 			{
+				strcpy(tok.comment, "");
+				int k, j = 0;																	// operand 분리
+				for (k = 0; k < MAX_OPERAND; k++)
+				{
+					*tok.operand[k] = malloc(20);												// operand 토큰 배열 공간 할당
+					memset(tok.operand[k], NULL, 20);											// operand 토큰 배열 초기화
+				}
 				*token_table[token_line] = tok;
 				token_line++;
 				return 0;
 			}
-			char* optemp = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));					// operand 토큰을 세분하기 위한 임시 토큰 공간 할당
+			char* optemp = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));				// operand 토큰을 세분하기 위한 임시 토큰 공간 할당
 			strcpy(optemp, temp);																	// operand 분리를 위한 임시 저장							
 
 			temp = strtok(NULL, "\t");
 			if (temp == NULL)																		// comment 없을때
 			{
-				int k, j = 0;										//operand 분리
+				int k, j = 0;																		//operand 분리
 				for (k = 0; k < MAX_OPERAND; k++)
 				{
-					*tok.operand[k] = malloc(15);										// operand 토큰 배열 공간 할당
-					memset(tok.operand[k], NULL, 15);											// operand 토큰 배열 초기화
+					*tok.operand[k] = malloc(20);													// operand 토큰 배열 공간 할당
+					memset(tok.operand[k], NULL, 20);												// operand 토큰 배열 초기화
 				}
 				optemp = strtok(optemp, ",");
 				while (optemp != NULL)
@@ -481,20 +535,21 @@ int token_parsing(char* str)
 					if (strcmp(tok.operand[k], "") == 0)
 						*tok.operand[k] = NULL;
 				}
+				strcpy(tok.comment, "");
 				*token_table[token_line] = tok;
 				token_line++;
 				return 0;
 			}
-			else // comment 있을때
+			else																					// comment 있을때
 			{
 				*tok.comment = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));
 				strcpy(tok.comment, temp);
 
-				int k, j = 0;										//operand 분리
+				int k, j = 0;																		// operand 분리
 				for (k = 0; k < MAX_OPERAND; k++)
 				{
-					*tok.operand[k] = malloc(15);										// operand 토큰 배열 공간 할당
-					memset(tok.operand[k], NULL, 15);											// operand 토큰 배열 초기화
+					*tok.operand[k] = malloc(20);													// operand 토큰 배열 공간 할당
+					memset(tok.operand[k], NULL, 20);												// operand 토큰 배열 초기화
 				}
 				optemp = strtok(optemp, ",");
 				while (optemp != NULL)
@@ -560,7 +615,6 @@ static int assem_pass1(void)
 {
 	int num = 0;
 	token_line = 0;
-	printf("assem_pass1");
 	while (input_data[num] != NULL) {
 		int a=token_parsing(input_data[num]);
 		if(a<0) return -1;
@@ -585,7 +639,67 @@ static int assem_pass1(void)
 */
 void make_opcode_output(char* file_name)
 {
-	/* add your code here */
+	FILE* file;
+	line_num = 0;
+	if (file_name == NULL) {
+		while (token_table[line_num] != NULL) {
+			if (token_table[line_num][0].operand[0] != NULL) {
+				if (token_table[line_num][0].operand[1] != NULL) {
+					if (token_table[line_num][0].operand[2] != NULL) {
+						if (opcode[line_num] >= 0) printf("%s\t%s\t%s,%s,%s\t%x\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0], token_table[line_num][0].operand[1], token_table[line_num][0].operand[2], inst_table[opcode[line_num]][0].op);
+						else  printf("%s\t%s\t%s,%s,%s\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0], token_table[line_num][0].operand[1], token_table[line_num][0].operand[2]);
+					}
+					else {
+						if (opcode[line_num] >= 0) printf("%s\t%s\t%s,%s\t%x\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0], token_table[line_num][0].operand[1], inst_table[opcode[line_num]][0].op);
+						else  printf("%s\t%s\t%s,%s\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0], token_table[line_num][0].operand[1]);
+					}
+				}
+				else {
+					if (opcode[line_num] >= 0) printf("%s\t%s\t%s\t%x\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0], inst_table[opcode[line_num]][0].op);
+					else  printf("%s\t%s\t%s\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0]);
+				}
+			}
+			else {
+				if (opcode[line_num] >= 0) printf("%s\t%s\t\t%x\n", token_table[line_num][0].label, token_table[line_num][0].operator, inst_table[opcode[line_num]][0].op);
+				else  printf("%s\t%s\t\n", token_table[line_num][0].label, token_table[line_num][0].operator);
+			}
+
+			line_num++;
+		}
+	}
+	else {
+		file = fopen(file_name, "w");
+		while (token_table[line_num] != NULL) {
+			if (token_table[line_num][0].operand[0][0] != NULL) {
+				if (token_table[line_num][0].operand[1][0] != NULL) {
+					if (token_table[line_num][0].operand[2][0] != NULL) {
+						if (opcode[line_num] >= 0) fprintf(file, "%s\t%s\t%s,%s,%s\t%x\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0], token_table[line_num][0].operand[1], token_table[line_num][0].operand[2], inst_table[opcode[line_num]][0].op);
+						else  fprintf(file, "%s\t%s\t%s,%s,%s\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0], token_table[line_num][0].operand[1], token_table[line_num][0].operand[2]);
+					}
+					else {
+						if (opcode[line_num] >= 0) fprintf(file, "%s\t%s\t%s,%s\t%x\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0], token_table[line_num][0].operand[1], inst_table[opcode[line_num]][0].op);
+						else  fprintf(file, "%s\t%s\t%s,%s\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0], token_table[line_num][0].operand[1]);
+					}
+				}
+				else {
+					if (opcode[line_num] >= 0) fprintf(file, "%s\t%s\t%s\t%x\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0], inst_table[opcode[line_num]][0].op);
+					else  fprintf(file, "%s\t%s\t%s\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0]);
+				}
+			}
+			else {
+				if (token_table[line_num][0].comment[0] == 46) fprintf(file, "%s\n", token_table[line_num][0].comment);
+				else {
+					if (opcode[line_num] >= 0) fprintf(file, "%s\t%s\t\t%x\n", token_table[line_num][0].label, token_table[line_num][0].operator, inst_table[opcode[line_num]][0].op);
+					else  fprintf(file, "%s\t%s\t\n", token_table[line_num][0].label, token_table[line_num][0].operator);
+				}
+			}
+			fflush(file);
+
+			line_num++;
+		}
+		fclose(file);
+	}
+	return;
 }
 
 /* ----------------------------------------------------------------------------------

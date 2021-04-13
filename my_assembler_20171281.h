@@ -47,6 +47,8 @@ typedef struct token_unit token;
 token* token_table[MAX_LINES];
 static int token_line;
 
+static int opcode[MAX_LINES] = {0};
+
 /*
  * 심볼을 관리하는 구조체이다.
  * 심볼 테이블은 심볼 이름, 심볼의 위치로 구성된다.
