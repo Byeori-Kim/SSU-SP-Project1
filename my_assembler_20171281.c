@@ -44,20 +44,19 @@ int main(int args, char* arg[])
 	}
 
 	//make_opcode_output(NULL);
-	make_opcode_output("output_20171281.txt");
+	//make_opcode_output("output_20171281.txt");
 
-	/*
-	 * 추후 프로젝트에서 사용되는 부분
-	 *
-	make_symtab_output("symtab_20171281");
+	
+	make_symtab_output("symtab_20171281.txt");																// symboltable 출력
+	make_literaltab_output("literaltab_20171281.txt");														// literaltable 출력
 	if (assem_pass2() < 0)
 	{
 		printf(" assem_pass2: 패스2 과정에서 실패하였습니다.  \n");
 		return -1;
 	}
 
-	make_objectcode_output("output_20171281");
-	*/
+	make_objectcode_output("output_20171281.txt");															// 최종결과 출력
+	
 	return 0;
 }
 
@@ -204,8 +203,8 @@ int token_parsing(char* str)
 		int k, j = 0;																	
 		for (k = 0; k < MAX_OPERAND; k++)
 		{
-			*tok.operand[k] = malloc(20);												// operand 토큰 배열 공간 할당
-			memset(tok.operand[k], NULL, 20);											// operand 토큰 배열 초기화
+			*tok.operand[k] = malloc(20);																	// operand 토큰 배열 공간 할당
+			memset(tok.operand[k], NULL, 20);																// operand 토큰 배열 초기화
 		}
 		strcpy(tok.comment, buf);
 		*token_table[token_line] = tok;
@@ -213,69 +212,69 @@ int token_parsing(char* str)
 		return 0;
 	}
 	temp = strtok(buf, "\t");
-	if (buf[0] != '\t')																				// label 있을때
+	if (buf[0] != '\t')																						// label 있을때
 	{
-		tok.label = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));						// label token 공간 할당
-		strcpy(tok.label, temp);																	// label token 입력
+		tok.label = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));								// label token 공간 할당
+		strcpy(tok.label, temp);																			// label token 입력
 
-		temp = strtok(NULL, "\t");																	// operator 분리
-		tok.operator=malloc(sizeof(temp));															// operator 토큰 공간 할당
-		strcpy(tok.operator, temp);																	// operator 토큰 입력													
+		temp = strtok(NULL, "\t");																			// operator 분리
+		tok.operator=malloc(sizeof(temp));																	// operator 토큰 공간 할당
+		strcpy(tok.operator, temp);																			// operator 토큰 입력													
 
-		temp = strtok(NULL, "\t");																	//다음 토큰 분리
+		temp = strtok(NULL, "\t");																			//다음 토큰 분리
 
-		int isop = search_opcode(tok.operator);														// 다음 토큰이 operand인지 comment인지 없는지 구분
-		opcode[token_line] = isop;																	// operator의 index 저장
-		if (isop >= 0)																				// operator 가 inst_file에 있는경우
+		int isop = search_opcode(tok.operator);																// 다음 토큰이 operand인지 comment인지 없는지 구분
+		opcode[token_line] = isop;																			// operator의 index 저장
+		if (isop >= 0)																						// operator 가 inst_file에 있는경우
 		{
-																									// operand 개수 확인 가능
-			if (inst_table[isop][0].ops == 0)														// operand가 0개일때 -> 다음 토큰 = comment or 없음 
+																											// operand 개수 확인 가능
+			if (inst_table[isop][0].ops == 0)																// operand가 0개일때 -> 다음 토큰 = comment or 없음 
 			{
-				if (temp == NULL)																	// 다음 토큰 없을때
+				if (temp == NULL)																			// 다음 토큰 없을때
 				{
 					strcpy(tok.comment, "");
-					int k, j = 0;																	// operand 분리
+					int k, j = 0;																			// operand 분리
 					for (k = 0; k < MAX_OPERAND; k++)
 					{
-						*tok.operand[k] = malloc(20);												// operand 토큰 배열 공간 할당
-						memset(tok.operand[k], NULL, 20);											// operand 토큰 배열 초기화
+						*tok.operand[k] = malloc(20);														// operand 토큰 배열 공간 할당
+						memset(tok.operand[k], NULL, 20);													// operand 토큰 배열 초기화
 					}
 					*token_table[token_line] = tok;
 					token_line++;
 
 					return 0;
 				}
-				else																				// 다음 토큰 = comment
+				else																						// 다음 토큰 = comment
 				{
 					for (int k = 0; k < MAX_OPERAND; k++)
 					{
-						*tok.operand[k] = malloc(20);												// operand 토큰 배열 공간 할당
-						memset(tok.operand[k], NULL, 20);											// operand 토큰 배열 초기화
+						*tok.operand[k] = malloc(20);														// operand 토큰 배열 공간 할당
+						memset(tok.operand[k], NULL, 20);													// operand 토큰 배열 초기화
 					}
-					*tok.comment = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));		// comment 토큰 공간 할당
-					strcpy(tok.comment, temp);														// comment 토큰 입력	
+					*tok.comment = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));				// comment 토큰 공간 할당
+					strcpy(tok.comment, temp);																// comment 토큰 입력	
 					*token_table[token_line] = tok;
 					token_line++;
 					return 0;
 				}
 
 			}
-			else																					//다음 토큰 = operand																	
+			else																							//다음 토큰 = operand																	
 			{
-				char* optemp = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));			// operand 토큰을 세분하기 위한 임시 토큰 공간 할당
-				strcpy(optemp, temp);																// operand 분리를 위한 임시 저장
+				char* optemp = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));					// operand 토큰을 세분하기 위한 임시 토큰 공간 할당
+				strcpy(optemp, temp);																		// operand 분리를 위한 임시 저장
 
 
-				temp = strtok(NULL, "	");															//다음 토큰 분리
-				if (temp == NULL)																	// 다음 토큰 없을때
+				temp = strtok(NULL, "	");																	//다음 토큰 분리
+				if (temp == NULL)																			// 다음 토큰 없을때
 				{
-					int k, j = 0;																	// operand 분리
+					int k, j = 0;																			// operand 분리
 					for (k = 0; k < MAX_OPERAND; k++)
 					{
-						*tok.operand[k] = malloc(20);												// operand 토큰 배열 공간 할당
-						memset(tok.operand[k], NULL, 20);											// operand 토큰 배열 초기화
+						*tok.operand[k] = malloc(20);														// operand 토큰 배열 공간 할당
+						memset(tok.operand[k], NULL, 20);													// operand 토큰 배열 초기화
 					}
-					optemp = strtok(optemp, ",");													// operand 토큰 분리 및 입력 루틴
+					optemp = strtok(optemp, ",");															// operand 토큰 분리 및 입력 루틴
 					while (optemp != NULL)
 					{
 						strcpy(tok.operand[j++], optemp);
@@ -293,16 +292,16 @@ int token_parsing(char* str)
 				}
 				else // 다음 토큰 = comment 
 				{
-					*tok.comment = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));		// comment 토큰 공간 할당
-					strcpy(tok.comment, temp);											  			// comment 토큰 입력
+					*tok.comment = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));				// comment 토큰 공간 할당
+					strcpy(tok.comment, temp);											  					// comment 토큰 입력
 
-					int k, j = 0;																	// operand 분리
+					int k, j = 0;																			// operand 분리
 					for (k = 0; k < MAX_OPERAND; k++)
 					{
-						*tok.operand[k] = malloc(20);												// operand 토큰 배열 공간 할당
-						memset(tok.operand[k], NULL, 20);											// operand 토큰 배열 초기화
+						*tok.operand[k] = malloc(20);														// operand 토큰 배열 공간 할당
+						memset(tok.operand[k], NULL, 20);													// operand 토큰 배열 초기화
 					}
-					optemp = strtok(optemp, ",");													// operand 토큰 분리 및 입력 루틴
+					optemp = strtok(optemp, ",");															// operand 토큰 분리 및 입력 루틴
 					while (optemp != NULL)
 					{
 						strcpy(tok.operand[j++], optemp);
@@ -321,28 +320,28 @@ int token_parsing(char* str)
 			}
 
 		}
-		else																						// inst_file 에 없는 operator인 경우
+		else																								// inst_file 에 없는 operator인 경우
 		{
-			if (temp == NULL)																		// inst_file 에 없는 operator이면서 operand와 comment모두 존재 하지 않을 경우
+			if (temp == NULL)																				// inst_file 에 없는 operator이면서 operand와 comment모두 존재 하지 않을 경우
 			{
 				strcpy(tok.comment, "");
-				int k, j = 0;																	// operand 분리
+				int k, j = 0;																				// operand 분리
 				for (k = 0; k < MAX_OPERAND; k++)
 				{
-					*tok.operand[k] = malloc(20);												// operand 토큰 배열 공간 할당
-					memset(tok.operand[k], NULL, 20);											// operand 토큰 배열 초기화
+					*tok.operand[k] = malloc(20);															// operand 토큰 배열 공간 할당
+					memset(tok.operand[k], NULL, 20);														// operand 토큰 배열 초기화
 				}
 				*token_table[token_line] = tok;
 				token_line++;
 				return 0;
 			}
-			char* optemp = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));				// operand 토큰을 세분하기 위한 임시 토큰 공간 할당
-			strcpy(optemp, temp);																	// operand 분리를 위한 임시 저장							
+			char* optemp = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));						// operand 토큰을 세분하기 위한 임시 토큰 공간 할당
+			strcpy(optemp, temp);																			// operand 분리를 위한 임시 저장							
 
 			temp = strtok(NULL, "\t");
-			if (temp == NULL)																		// comment 없을때
+			if (temp == NULL)																				// comment 없을때
 			{
-				int k, j = 0;																		//operand 분리
+				int k, j = 0;																				// operand 분리
 				for (k = 0; k < MAX_OPERAND; k++)
 				{
 					*tok.operand[k] = malloc(20);
@@ -364,12 +363,12 @@ int token_parsing(char* str)
 				token_line++;
 				return 0;
 			}
-			else																					// comment 있을때
+			else																							// comment 있을때
 			{
 				*tok.comment = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));
 				strcpy(tok.comment, temp);
 
-				int k, j = 0;																		// operand 분리
+				int k, j = 0;																				// operand 분리
 				for (k = 0; k < MAX_OPERAND; k++)
 				{
 					*tok.operand[k] = malloc(20);
@@ -393,64 +392,64 @@ int token_parsing(char* str)
 	else if (buf[0] == '\t')
 	{
 		tok.label = "";
-		tok.operator=(char*)calloc(strlen(temp) / sizeof(char), sizeof(char));						// operator parsing
+		tok.operator=(char*)calloc(strlen(temp) / sizeof(char), sizeof(char));								// operator parsing
 		strcpy(tok.operator, temp);
 
 		temp = strtok(NULL, "\t");
-		int isop = search_opcode(tok.operator);														// 다음 토큰이 operand인지 comment인지 없는지 구분
-		opcode[token_line] = isop;																	// operator의 index 저장
+		int isop = search_opcode(tok.operator);																// 다음 토큰이 operand인지 comment인지 없는지 구분
+		opcode[token_line] = isop;																			// operator의 index 저장
 
-		if (isop >= 0)																				//operator 가 inst_file에 있는경우
+		if (isop >= 0)																						//operator 가 inst_file에 있는경우
 		{
-																									//operand 개수 확인 가능
-			if (inst_table[isop][0].ops == 0)														//operand가 0개일때 -> 다음 토큰 = comment or 없음 
+																											//operand 개수 확인 가능
+			if (inst_table[isop][0].ops == 0)																//operand가 0개일때 -> 다음 토큰 = comment or 없음 
 			{
-				if (temp == NULL)																	// 다음 토큰 없을때
+				if (temp == NULL)																			// 다음 토큰 없을때
 				{
 					strcpy(tok.comment, "");
-					int k, j = 0;																	// operand 분리
+					int k, j = 0;																			// operand 분리
 					for (k = 0; k < MAX_OPERAND; k++)
 					{
-						*tok.operand[k] = malloc(20);												// operand 토큰 배열 공간 할당
-						memset(tok.operand[k], NULL, 20);											// operand 토큰 배열 초기화
+						*tok.operand[k] = malloc(20);														// operand 토큰 배열 공간 할당
+						memset(tok.operand[k], NULL, 20);													// operand 토큰 배열 초기화
 					}
 					*token_table[token_line] = tok;
 					token_line++;
 					return 0;
 				}
-				else																				// 다음 토큰 = comment
+				else																						// 다음 토큰 = comment
 				{
 					strcpy(tok.comment, "");
-					int k, j = 0;																	// operand 분리
+					int k, j = 0;																			// operand 분리
 					for (k = 0; k < MAX_OPERAND; k++)
 					{
-						*tok.operand[k] = malloc(20);												// operand 토큰 배열 공간 할당
-						memset(tok.operand[k], NULL, 20);											// operand 토큰 배열 초기화
+						*tok.operand[k] = malloc(20);														// operand 토큰 배열 공간 할당
+						memset(tok.operand[k], NULL, 20);													// operand 토큰 배열 초기화
 					}
-					*tok.comment = malloc(sizeof(temp));											// comment 토큰 공간 할당
-					strcpy(tok.comment, temp);														// comment 토큰 입력	
+					*tok.comment = malloc(sizeof(temp));													// comment 토큰 공간 할당
+					strcpy(tok.comment, temp);																// comment 토큰 입력	
 					*token_table[token_line] = tok;
 					token_line++;
 					return 0;
 				}
 
 			}
-			else																					//다음 토큰 = operand																	
+			else																							//다음 토큰 = operand																	
 			{
-				char* optemp = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));			// operand 토큰을 세분하기 위한 임시 토큰 공간 할당
-				strcpy(optemp, temp);																// operand 분리를 위한 임시 저장
+				char* optemp = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));					// operand 토큰을 세분하기 위한 임시 토큰 공간 할당
+				strcpy(optemp, temp);																		// operand 분리를 위한 임시 저장
 
 
-				temp = strtok(NULL, "\t");															//다음 토큰 분리
-				if (temp == NULL)																	// 다음 토큰 없을때
+				temp = strtok(NULL, "\t");																	//다음 토큰 분리
+				if (temp == NULL)																			// 다음 토큰 없을때
 				{
-					int k, j = 0;																	// operand 분리
+					int k, j = 0;																			// operand 분리
 					for (k = 0; k < MAX_OPERAND; k++)
 					{
-						*tok.operand[k] = malloc(20);												// operand 토큰 배열 공간 할당
-						memset(tok.operand[k], NULL, 20);											// operand 토큰 배열 초기화
+						*tok.operand[k] = malloc(20);														// operand 토큰 배열 공간 할당
+						memset(tok.operand[k], NULL, 20);													// operand 토큰 배열 초기화
 					}
-					optemp = strtok(optemp, ",");													// operand 토큰 분리 및 입력 루틴
+					optemp = strtok(optemp, ",");															// operand 토큰 분리 및 입력 루틴
 					while (optemp != NULL)
 					{
 						strcpy(tok.operand[j++], optemp);
@@ -468,17 +467,17 @@ int token_parsing(char* str)
 				}
 				else // 다음 토큰 = comment 
 				{
-					*tok.comment = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));		// comment 토큰 공간 할당
-					strcpy(tok.comment, temp);											  			// comment 토큰 입력
+					*tok.comment = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));				// comment 토큰 공간 할당
+					strcpy(tok.comment, temp);											  					// comment 토큰 입력
 
-					int k, j = 0;																	// operand 분리
+					int k, j = 0;																			// operand 분리
 					for (k = 0; k < MAX_OPERAND; k++)
 					{
-						*tok.operand[k] = malloc(20);												// operand 토큰 배열 공간 할당
-						memset(tok.operand[k], NULL, 20);											// operand 토큰 배열 초기화
+						*tok.operand[k] = malloc(20);														// operand 토큰 배열 공간 할당
+						memset(tok.operand[k], NULL, 20);													// operand 토큰 배열 초기화
 
 					}
-					optemp = strtok(optemp, ",");													// operand 토큰 분리 및 입력 루틴
+					optemp = strtok(optemp, ",");															// operand 토큰 분리 및 입력 루틴
 					while (optemp != NULL)
 					{
 						strcpy(tok.operand[j++], optemp);
@@ -497,32 +496,32 @@ int token_parsing(char* str)
 			}
 
 		}
-		else																						// inst_file 에 없는 operator인 경우
+		else																								// inst_file 에 없는 operator인 경우
 		{
-			if (temp == NULL)																		// inst_file 에 없는 operator이면서 operand와 comment모두 존재 하지 않을 경우
+			if (temp == NULL)																				// inst_file 에 없는 operator이면서 operand와 comment모두 존재 하지 않을 경우
 			{
 				strcpy(tok.comment, "");
-				int k, j = 0;																	// operand 분리
+				int k, j = 0;																				// operand 분리
 				for (k = 0; k < MAX_OPERAND; k++)
 				{
-					*tok.operand[k] = malloc(20);												// operand 토큰 배열 공간 할당
-					memset(tok.operand[k], NULL, 20);											// operand 토큰 배열 초기화
+					*tok.operand[k] = malloc(20);															// operand 토큰 배열 공간 할당
+					memset(tok.operand[k], NULL, 20);														// operand 토큰 배열 초기화
 				}
 				*token_table[token_line] = tok;
 				token_line++;
 				return 0;
 			}
-			char* optemp = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));				// operand 토큰을 세분하기 위한 임시 토큰 공간 할당
-			strcpy(optemp, temp);																	// operand 분리를 위한 임시 저장							
+			char* optemp = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));						// operand 토큰을 세분하기 위한 임시 토큰 공간 할당
+			strcpy(optemp, temp);																			// operand 분리를 위한 임시 저장							
 
 			temp = strtok(NULL, "\t");
-			if (temp == NULL)																		// comment 없을때
+			if (temp == NULL)																				// comment 없을때
 			{
-				int k, j = 0;																		//operand 분리
+				int k, j = 0;																				//operand 분리
 				for (k = 0; k < MAX_OPERAND; k++)
 				{
-					*tok.operand[k] = malloc(20);													// operand 토큰 배열 공간 할당
-					memset(tok.operand[k], NULL, 20);												// operand 토큰 배열 초기화
+					*tok.operand[k] = malloc(20);															// operand 토큰 배열 공간 할당
+					memset(tok.operand[k], NULL, 20);														// operand 토큰 배열 초기화
 				}
 				optemp = strtok(optemp, ",");
 				while (optemp != NULL)
@@ -540,16 +539,16 @@ int token_parsing(char* str)
 				token_line++;
 				return 0;
 			}
-			else																					// comment 있을때
+			else																							// comment 있을때
 			{
 				*tok.comment = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));
 				strcpy(tok.comment, temp);
 
-				int k, j = 0;																		// operand 분리
+				int k, j = 0;																				// operand 분리
 				for (k = 0; k < MAX_OPERAND; k++)
 				{
-					*tok.operand[k] = malloc(20);													// operand 토큰 배열 공간 할당
-					memset(tok.operand[k], NULL, 20);												// operand 토큰 배열 초기화
+					*tok.operand[k] = malloc(20);															// operand 토큰 배열 공간 할당
+					memset(tok.operand[k], NULL, 20);														// operand 토큰 배열 초기화
 				}
 				optemp = strtok(optemp, ",");
 				while (optemp != NULL)
@@ -584,7 +583,7 @@ int search_opcode(char* str)
 	int index = 0;
 	if (str[0] == "+") {
 		for (int i = 1; str[i]; i++) {
-			str[i - 1] = str[i];   // operator 앞에 + 붙어있을 경우 제거
+			str[i - 1] = str[i];																			// operator 앞에 + 붙어있을 경우 제거
 		}
 	}
 	while (inst_table[index] != NULL) {
@@ -637,7 +636,7 @@ static int assem_pass1(void)
 *        또한 과제 3번에서만 쓰이는 함수이므로 이후의 프로젝트에서는 사용되지 않는다.
 * -----------------------------------------------------------------------------------
 */
-void make_opcode_output(char* file_name)
+/*void make_opcode_output(char* file_name)
 {
 	FILE* file;
 	line_num = 0;
@@ -700,7 +699,7 @@ void make_opcode_output(char* file_name)
 		fclose(file);
 	}
 	return;
-}
+}*/
 
 /* ----------------------------------------------------------------------------------
 * 설명 : 입력된 문자열의 이름을 가진 파일에 프로그램의 결과를 저장하는 함수이다.
@@ -713,6 +712,21 @@ void make_opcode_output(char* file_name)
 * -----------------------------------------------------------------------------------
 */
 void make_symtab_output(char* file_name)
+{
+	/* add your code here */
+}
+
+/* ----------------------------------------------------------------------------------
+* 설명 : 입력된 문자열의 이름을 가진 파일에 프로그램의 결과를 저장하는 함수이다.
+*        여기서 출력되는 내용은 LITERAL별 주소값이 저장된 TABLE이다.
+* 매계 : 생성할 오브젝트 파일명
+* 반환 : 없음
+* 주의 : 만약 인자로 NULL값이 들어온다면 프로그램의 결과를 표준출력으로 보내어
+*        화면에 출력해준다.
+*
+* -----------------------------------------------------------------------------------
+*/
+void make_literaltab_output(char* filen_ame)
 {
 	/* add your code here */
 }

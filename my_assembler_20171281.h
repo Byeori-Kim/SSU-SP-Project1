@@ -39,8 +39,7 @@ struct token_unit
 	char* operator;
 	char operand[MAX_OPERAND][20];
 	char comment[100];
-	// 다음과제에 사용될 변수
-	// char nixbpe;
+	char nixbpe;
 };
 
 typedef struct token_unit token;
@@ -52,7 +51,6 @@ static int opcode[MAX_LINES] = {0};
 /*
  * 심볼을 관리하는 구조체이다.
  * 심볼 테이블은 심볼 이름, 심볼의 위치로 구성된다.
- * 추후 과제에 사용 예정
  */
 struct symbol_unit
 {
@@ -60,8 +58,21 @@ struct symbol_unit
 	int addr;
 };
 
+/*
+* 리터럴을 관리하는 구조체이다.
+* 리터럴 테이블은 리터럴의 이름, 리터럴의 위치로 구성된다.
+*/
+struct literal_unit
+{
+	char* literal;
+	int addr;
+};
+
 typedef struct symbol_unit symbol;
 symbol sym_table[MAX_LINES];
+
+typedef struct literal_unit literal;
+literal literal_table[MAX_LINES];
 
 static int locctr;
 //--------------
@@ -77,5 +88,6 @@ static int assem_pass1(void);
 void make_opcode_output(char* file_name);
 
 void make_symtab_output(char* file_name);
+void make_literaltab_output(char* file_name);
 static int assem_pass2(void);
 void make_objectcode_output(char* file_name);
