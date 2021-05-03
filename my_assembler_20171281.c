@@ -1,13 +1,13 @@
 /*
- * È­ÀÏ¸í : my_assembler_20171281.c
- * ¼³  ¸í : ÀÌ ÇÁ·Î±×·¥Àº SIC/XE ¸Ó½ÅÀ» À§ÇÑ °£´ÜÇÑ Assembler ÇÁ·Î±×·¥ÀÇ ¸ŞÀÎ·çÆ¾À¸·Î,
- * ÀÔ·ÂµÈ ÆÄÀÏÀÇ ÄÚµå Áß, ¸í·É¾î¿¡ ÇØ´çÇÏ´Â OPCODE¸¦ Ã£¾Æ Ãâ·ÂÇÑ´Ù.
- * ÆÄÀÏ ³»¿¡¼­ »ç¿ëµÇ´Â ¹®ÀÚ¿­ "00000000"¿¡´Â ÀÚ½ÅÀÇ ÇĞ¹øÀ» ±âÀÔÇÑ´Ù.
+ * í™”ì¼ëª… : my_assembler_20171281.c
+ * ì„¤  ëª… : ì´ í”„ë¡œê·¸ë¨ì€ SIC/XE ë¨¸ì‹ ì„ ìœ„í•œ ê°„ë‹¨í•œ Assembler í”„ë¡œê·¸ë¨ì˜ ë©”ì¸ë£¨í‹´ìœ¼ë¡œ,
+ * ì…ë ¥ëœ íŒŒì¼ì˜ ì½”ë“œ ì¤‘, ëª…ë ¹ì–´ì— í•´ë‹¹í•˜ëŠ” OPCODEë¥¼ ì°¾ì•„ ì¶œë ¥í•œë‹¤.
+ * íŒŒì¼ ë‚´ì—ì„œ ì‚¬ìš©ë˜ëŠ” ë¬¸ìì—´ "00000000"ì—ëŠ” ìì‹ ì˜ í•™ë²ˆì„ ê¸°ì…í•œë‹¤.
  */
 
  /*
   *
-  * ÇÁ·Î±×·¥ÀÇ Çì´õ¸¦ Á¤ÀÇÇÑ´Ù.
+  * í”„ë¡œê·¸ë¨ì˜ í—¤ë”ë¥¼ ì •ì˜í•œë‹¤.
   *
   */
 #define _GNU_SOURCE
@@ -18,28 +18,28 @@
 #include <fcntl.h>
 
 
-  // ÆÄÀÏ¸íÀÇ "00000000"Àº ÀÚ½ÅÀÇ ÇĞ¹øÀ¸·Î º¯°æÇÒ °Í.
+  // íŒŒì¼ëª…ì˜ "00000000"ì€ ìì‹ ì˜ í•™ë²ˆìœ¼ë¡œ ë³€ê²½í•  ê²ƒ.
 #include "my_assembler_20171281.h"
 
 /* ----------------------------------------------------------------------------------
- * ¼³¸í : »ç¿ëÀÚ·Î ºÎÅÍ ¾î¼Àºí¸® ÆÄÀÏÀ» ¹Ş¾Æ¼­ ¸í·É¾îÀÇ OPCODE¸¦ Ã£¾Æ Ãâ·ÂÇÑ´Ù.
- * ¸Å°è : ½ÇÇà ÆÄÀÏ, ¾î¼Àºí¸® ÆÄÀÏ
- * ¹İÈ¯ : ¼º°ø = 0, ½ÇÆĞ = < 0
- * ÁÖÀÇ : ÇöÀç ¾î¼Àºí¸® ÇÁ·Î±×·¥ÀÇ ¸®½ºÆ® ÆÄÀÏÀ» »ı¼ºÇÏ´Â ·çÆ¾Àº ¸¸µéÁö ¾Ê¾Ò´Ù.
- *		   ¶ÇÇÑ Áß°£ÆÄÀÏÀ» »ı¼ºÇÏÁö ¾Ê´Â´Ù.
+ * ì„¤ëª… : ì‚¬ìš©ìë¡œ ë¶€í„° ì–´ì…ˆë¸”ë¦¬ íŒŒì¼ì„ ë°›ì•„ì„œ ëª…ë ¹ì–´ì˜ OPCODEë¥¼ ì°¾ì•„ ì¶œë ¥í•œë‹¤.
+ * ë§¤ê³„ : ì‹¤í–‰ íŒŒì¼, ì–´ì…ˆë¸”ë¦¬ íŒŒì¼
+ * ë°˜í™˜ : ì„±ê³µ = 0, ì‹¤íŒ¨ = < 0
+ * ì£¼ì˜ : í˜„ì¬ ì–´ì…ˆë¸”ë¦¬ í”„ë¡œê·¸ë¨ì˜ ë¦¬ìŠ¤íŠ¸ íŒŒì¼ì„ ìƒì„±í•˜ëŠ” ë£¨í‹´ì€ ë§Œë“¤ì§€ ì•Šì•˜ë‹¤.
+ *		   ë˜í•œ ì¤‘ê°„íŒŒì¼ì„ ìƒì„±í•˜ì§€ ì•ŠëŠ”ë‹¤.
  * ----------------------------------------------------------------------------------
  */
 int main(int args, char* arg[])
 {
 	if (init_my_assembler() < 0)
 	{
-		printf("init_my_assembler: ÇÁ·Î±×·¥ ÃÊ±âÈ­¿¡ ½ÇÆĞ Çß½À´Ï´Ù.\n");
+		printf("init_my_assembler: í”„ë¡œê·¸ë¨ ì´ˆê¸°í™”ì— ì‹¤íŒ¨ í–ˆìŠµë‹ˆë‹¤.\n");
 		return -1;
 	}
 
 	if (assem_pass1() < 0)
 	{
-		printf("assem_pass1: ÆĞ½º1 °úÁ¤¿¡¼­ ½ÇÆĞÇÏ¿´½À´Ï´Ù.  \n");
+		printf("assem_pass1: íŒ¨ìŠ¤1 ê³¼ì •ì—ì„œ ì‹¤íŒ¨í•˜ì˜€ìŠµë‹ˆë‹¤.  \n");
 		return -1;
 	}
 
@@ -47,48 +47,50 @@ int main(int args, char* arg[])
 	//make_opcode_output("output_20171281.txt");
 
 	
-	make_symtab_output("symtab_20171281.txt");																// symboltable Ãâ·Â
-	make_literaltab_output("literaltab_20171281.txt");														// literaltable Ãâ·Â
-	if (assem_pass2() < 0)
-	{
-		printf(" assem_pass2: ÆĞ½º2 °úÁ¤¿¡¼­ ½ÇÆĞÇÏ¿´½À´Ï´Ù.  \n");
-		return -1;
-	}
+	make_symtab_output("C:\\SP_Parser\\SP\\symtab_20171281.txt");																// symboltable ì¶œë ¥
+	//make_symtab_output(NULL);
+	//make_literaltab_output(NULL);
+	make_literaltab_output("C:\\SP_Parser\\SP\\literaltab_20171281.txt");														// literaltable ì¶œë ¥
+	//if (assem_pass2() < 0)
+	//{
+	//	printf(" assem_pass2: íŒ¨ìŠ¤2 ê³¼ì •ì—ì„œ ì‹¤íŒ¨í•˜ì˜€ìŠµë‹ˆë‹¤.  \n");
+	//	return -1;
+	//}
 
-	make_objectcode_output("output_20171281.txt");															// ÃÖÁ¾°á°ú Ãâ·Â
+	//make_objectcode_output("C:\\SP_Parser\\SP\\output_20171281.txt");															// ìµœì¢…ê²°ê³¼ ì¶œë ¥
 	
 	return 0;
 }
 
 /* ----------------------------------------------------------------------------------
- * ¼³¸í : ÇÁ·Î±×·¥ ÃÊ±âÈ­¸¦ À§ÇÑ ÀÚ·á±¸Á¶ »ı¼º ¹× ÆÄÀÏÀ» ÀĞ´Â ÇÔ¼öÀÌ´Ù.
- * ¸Å°è : ¾øÀ½
- * ¹İÈ¯ : Á¤»óÁ¾·á = 0 , ¿¡·¯ ¹ß»ı = -1
- * ÁÖÀÇ : °¢°¢ÀÇ ¸í·É¾î Å×ÀÌºíÀ» ³»ºÎ¿¡ ¼±¾ğÇÏÁö ¾Ê°í °ü¸®¸¦ ¿ëÀÌÇÏ°Ô ÇÏ±â
- *		   À§ÇØ¼­ ÆÄÀÏ ´ÜÀ§·Î °ü¸®ÇÏ¿© ÇÁ·Î±×·¥ ÃÊ±âÈ­¸¦ ÅëÇØ Á¤º¸¸¦ ÀĞ¾î ¿Ã ¼ö ÀÖµµ·Ï
- *		   ±¸ÇöÇÏ¿´´Ù.
+ * ì„¤ëª… : í”„ë¡œê·¸ë¨ ì´ˆê¸°í™”ë¥¼ ìœ„í•œ ìë£Œêµ¬ì¡° ìƒì„± ë° íŒŒì¼ì„ ì½ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ * ë§¤ê³„ : ì—†ìŒ
+ * ë°˜í™˜ : ì •ìƒì¢…ë£Œ = 0 , ì—ëŸ¬ ë°œìƒ = -1
+ * ì£¼ì˜ : ê°ê°ì˜ ëª…ë ¹ì–´ í…Œì´ë¸”ì„ ë‚´ë¶€ì— ì„ ì–¸í•˜ì§€ ì•Šê³  ê´€ë¦¬ë¥¼ ìš©ì´í•˜ê²Œ í•˜ê¸°
+ *		   ìœ„í•´ì„œ íŒŒì¼ ë‹¨ìœ„ë¡œ ê´€ë¦¬í•˜ì—¬ í”„ë¡œê·¸ë¨ ì´ˆê¸°í™”ë¥¼ í†µí•´ ì •ë³´ë¥¼ ì½ì–´ ì˜¬ ìˆ˜ ìˆë„ë¡
+ *		   êµ¬í˜„í•˜ì˜€ë‹¤.
  * ----------------------------------------------------------------------------------
  */
 int init_my_assembler(void)
 {
 	int result=0;
 
-	if ((result = init_inst_file("inst.data")) < 0)
+	if ((result = init_inst_file("C:\\SP_Parser\\SP\\inst.data")) < 0)
 		return -1;
-	if ((result = init_input_file("input.txt")) < 0)
+	if ((result = init_input_file("C:\\SP_Parser\\SP\\input.txt")) < 0)
 		return -1;
 	return result;
 }
 
 /* ----------------------------------------------------------------------------------
- * ¼³¸í : ¸Ó½ÅÀ» À§ÇÑ ±â°è ÄÚµå¸ñ·Ï ÆÄÀÏÀ» ÀĞ¾î ±â°è¾î ¸ñ·Ï Å×ÀÌºí(inst_table)À»
- *        »ı¼ºÇÏ´Â ÇÔ¼öÀÌ´Ù.
- * ¸Å°è : ±â°è¾î ¸ñ·Ï ÆÄÀÏ
- * ¹İÈ¯ : Á¤»óÁ¾·á = 0 , ¿¡·¯ < 0
- * ÁÖÀÇ : ±â°è¾î ¸ñ·ÏÆÄÀÏ Çü½ÄÀº ÀÚÀ¯·Ó°Ô ±¸ÇöÇÑ´Ù. ¿¹½Ã´Â ´ÙÀ½°ú °°´Ù.
+ * ì„¤ëª… : ë¨¸ì‹ ì„ ìœ„í•œ ê¸°ê³„ ì½”ë“œëª©ë¡ íŒŒì¼ì„ ì½ì–´ ê¸°ê³„ì–´ ëª©ë¡ í…Œì´ë¸”(inst_table)ì„
+ *        ìƒì„±í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ * ë§¤ê³„ : ê¸°ê³„ì–´ ëª©ë¡ íŒŒì¼
+ * ë°˜í™˜ : ì •ìƒì¢…ë£Œ = 0 , ì—ëŸ¬ < 0
+ * ì£¼ì˜ : ê¸°ê³„ì–´ ëª©ë¡íŒŒì¼ í˜•ì‹ì€ ììœ ë¡­ê²Œ êµ¬í˜„í•œë‹¤. ì˜ˆì‹œëŠ” ë‹¤ìŒê³¼ ê°™ë‹¤.
  *
  *	===============================================================================
- *		   | ÀÌ¸§ | Çü½Ä | ±â°è¾î ÄÚµå | ¿ÀÆÛ·£µåÀÇ °¹¼ö | NULL|
+ *		   | ì´ë¦„ | í˜•ì‹ | ê¸°ê³„ì–´ ì½”ë“œ | ì˜¤í¼ëœë“œì˜ ê°¯ìˆ˜ | NULL|
  *	===============================================================================
  *
  * ----------------------------------------------------------------------------------
@@ -99,17 +101,20 @@ int init_inst_file(char* inst_file)
 	int errno;
 	int len = 99;
 	char* line = malloc(len);
-	file = fopen(inst_file, "r");
+	fopen_s(&file, inst_file, "r");
 	inst_index = 0;
 	
 
-	if (file == NULL) { 
+	if (file == NULL) 
+	{ 
 		errno = -1; 
 		return errno;
 	}																										// file is not opened
 
-	else {
-		while (fscanf(file, "%[^\n]\n", line) != EOF) {
+	else 
+	{
+		while (fscanf(file, "%[^\n]\n", line) != EOF) 
+		{
 			struct inst_unit in = { 0 };
 
 			char* token;
@@ -117,23 +122,23 @@ int init_inst_file(char* inst_file)
 			token = strtok(line, " ");
 			inst_table[inst_index] = malloc(sizeof(inst));
 
-			strncpy(in.str, token, sizeof(token));
+			strncpy(in.str, token, sizeof(token));															// instruction ì €ì¥
 			token = strtok(NULL, " ");
 
-			in.format1 = *token - 48;
+			in.format1 = *token - 48;																		// format1 ì €ì¥
 			token = strtok(NULL, " ");
 
-			in.format2 = *token - 48;
+			in.format2 = *token - 48;																		// format2 ì €ì¥, formatì´ í•œ ê°œë©´ 0 ì €ì¥
 			token = strtok(NULL, " ");
 
-			in.op = ((token[2]-48)<<4) + (token[3]-48);
+			in.op = ((token[2]-48)<<4) + (token[3]-48);														// opcode ì €ì¥
 			token = strtok(NULL, " ");
 
-			in.ops = *token - 48;
+			in.ops = *token - 48;																			// operands ê°œìˆ˜ ì €ì¥
 			token = strtok(NULL, " ");
 
 
-			*inst_table[inst_index] = in;
+			*inst_table[inst_index] = in;																	// inst_tableì— ì¶”ê°€
 
 			inst_index++;
 			;
@@ -146,10 +151,10 @@ int init_inst_file(char* inst_file)
 }
 
 /* ----------------------------------------------------------------------------------
- * ¼³¸í : ¾î¼Àºí¸® ÇÒ ¼Ò½ºÄÚµå¸¦ ÀĞ¾î ¼Ò½ºÄÚµå Å×ÀÌºí(input_data)¸¦ »ı¼ºÇÏ´Â ÇÔ¼öÀÌ´Ù.
- * ¸Å°è : ¾î¼Àºí¸®ÇÒ ¼Ò½ºÆÄÀÏ¸í
- * ¹İÈ¯ : Á¤»óÁ¾·á = 0 , ¿¡·¯ < 0
- * ÁÖÀÇ : ¶óÀÎ´ÜÀ§·Î ÀúÀåÇÑ´Ù.
+ * ì„¤ëª… : ì–´ì…ˆë¸”ë¦¬ í•  ì†ŒìŠ¤ì½”ë“œë¥¼ ì½ì–´ ì†ŒìŠ¤ì½”ë“œ í…Œì´ë¸”(input_data)ë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ * ë§¤ê³„ : ì–´ì…ˆë¸”ë¦¬í•  ì†ŒìŠ¤íŒŒì¼ëª…
+ * ë°˜í™˜ : ì •ìƒì¢…ë£Œ = 0 , ì—ëŸ¬ < 0
+ * ì£¼ì˜ : ë¼ì¸ë‹¨ìœ„ë¡œ ì €ì¥í•œë‹¤.
  *
  * ----------------------------------------------------------------------------------
  */
@@ -161,17 +166,20 @@ int init_input_file(char* input_file)
 	int len = 99;
 	char* line = malloc(len);
 
-	file = fopen(input_file, "r");
+	fopen_s(&file, input_file, "r");
 
-	if (file == NULL) {
+	if (file == NULL) 
+	{
 		errno = -1;
 		return errno;
-	}																										//file is not opened
-	else {
-		while ( fgets(line, len, file) != NULL) {
+	}																										// file is not opened
+	else 
+	{
+		while ( fgets(line, len, file) != NULL) 
+		{
 			line[strlen(line) - 1] = '\0';
 			input_data[line_num] = malloc(len);
-			if (line != 0 && input_data[line_num] != 0) strncpy((input_data[line_num]), line, len);
+			if (line != 0 && input_data[line_num] != 0) strncpy((input_data[line_num]), line, len);			// input_data tableì— ì €ì¥
 			line_num++;
 		}
 		errno = 0;
@@ -181,138 +189,107 @@ int init_input_file(char* input_file)
 }
 
 /* ----------------------------------------------------------------------------------
- * ¼³¸í : ¼Ò½º ÄÚµå¸¦ ÀĞ¾î¿Í ÅäÅ«´ÜÀ§·Î ºĞ¼®ÇÏ°í ÅäÅ« Å×ÀÌºíÀ» ÀÛ¼ºÇÏ´Â ÇÔ¼öÀÌ´Ù.
- *        ÆĞ½º 1·Î ºÎÅÍ È£ÃâµÈ´Ù.
- * ¸Å°è : ÆÄ½ÌÀ» ¿øÇÏ´Â ¹®ÀÚ¿­
- * ¹İÈ¯ : Á¤»óÁ¾·á = 0 , ¿¡·¯ < 0
- * ÁÖÀÇ : my_assembler ÇÁ·Î±×·¥¿¡¼­´Â ¶óÀÎ´ÜÀ§·Î ÅäÅ« ¹× ¿ÀºêÁ§Æ® °ü¸®¸¦ ÇÏ°í ÀÖ´Ù.
+ * ì„¤ëª… : ì†ŒìŠ¤ ì½”ë“œë¥¼ ì½ì–´ì™€ í† í°ë‹¨ìœ„ë¡œ ë¶„ì„í•˜ê³  í† í° í…Œì´ë¸”ì„ ì‘ì„±í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ *        íŒ¨ìŠ¤ 1ë¡œ ë¶€í„° í˜¸ì¶œëœë‹¤.
+ * ë§¤ê³„ : íŒŒì‹±ì„ ì›í•˜ëŠ” ë¬¸ìì—´
+ * ë°˜í™˜ : ì •ìƒì¢…ë£Œ = 0 , ì—ëŸ¬ < 0
+ * ì£¼ì˜ : my_assembler í”„ë¡œê·¸ë¨ì—ì„œëŠ” ë¼ì¸ë‹¨ìœ„ë¡œ í† í° ë° ì˜¤ë¸Œì íŠ¸ ê´€ë¦¬ë¥¼ í•˜ê³  ìˆë‹¤.
  * ----------------------------------------------------------------------------------
  */
 int token_parsing(char* str)
 {
-	int i;
+	int i, j = 0;
 	char* temp;
 	char buf[100] = { 0 };
+	if (str == NULL) 
+	{ 
+		printf("token_parsing: fail to get input string\n"); 
+		return -1;
+	}
 	strcpy(buf, str);
 	struct token_unit tok;
+	tok.label = NULL;
+	tok.operator = NULL;
+	tok.index_num = -1;
+	tok.nixbpe = NULL;
+	for (i = 0; i < MAX_OPERAND; i++)
+	{
+		strcpy(tok.operand[i], "");
+	}
+	strcpy(tok.comment, "");
 	token_table[token_line] = (token*)malloc(sizeof(token));
 	if (buf[0] == '.')
 	{
-		tok.label = "";
-		tok.operator = "";
-		int k, j = 0;																	
-		for (k = 0; k < MAX_OPERAND; k++)
-		{
-			*tok.operand[k] = malloc(20);																	// operand ÅäÅ« ¹è¿­ °ø°£ ÇÒ´ç
-			memset(tok.operand[k], NULL, 20);																// operand ÅäÅ« ¹è¿­ ÃÊ±âÈ­
-		}
 		strcpy(tok.comment, buf);
-		*token_table[token_line] = tok;
+		*token_table[token_line] = tok;																		// token_tableì— ì €ì¥
 		token_line++;
 		return 0;
 	}
 	temp = strtok(buf, "\t");
-	if (buf[0] != '\t')																						// label ÀÖÀ»¶§
+	if (buf[0] != '\t')																						// label ìˆì„ë•Œ
 	{
-		tok.label = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));								// label token °ø°£ ÇÒ´ç
-		strcpy(tok.label, temp);																			// label token ÀÔ·Â
+		tok.label = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));								// label token ê³µê°„ í• ë‹¹
+		strcpy(tok.label, temp);																			// label token ì…ë ¥
 
-		temp = strtok(NULL, "\t");																			// operator ºĞ¸®
-		tok.operator=malloc(sizeof(temp));																	// operator ÅäÅ« °ø°£ ÇÒ´ç
-		strcpy(tok.operator, temp);																			// operator ÅäÅ« ÀÔ·Â													
+		temp = strtok(NULL, "\t");																			// operator ë¶„ë¦¬
+		tok.operator=malloc(sizeof(temp));																	// operator í† í° ê³µê°„ í• ë‹¹
+		strcpy(tok.operator, temp);																			// operator í† í° ì…ë ¥													
 
-		temp = strtok(NULL, "\t");																			//´ÙÀ½ ÅäÅ« ºĞ¸®
+		temp = strtok(NULL, "\t");																			//ë‹¤ìŒ í† í° ë¶„ë¦¬
 
-		int isop = search_opcode(tok.operator);																// ´ÙÀ½ ÅäÅ«ÀÌ operandÀÎÁö commentÀÎÁö ¾ø´ÂÁö ±¸ºĞ
-		opcode[token_line] = isop;																			// operatorÀÇ index ÀúÀå
-		if (isop >= 0)																						// operator °¡ inst_file¿¡ ÀÖ´Â°æ¿ì
+		tok.index_num = search_opcode(tok.operator);														// ë‹¤ìŒ í† í°ì´ operandì¸ì§€ commentì¸ì§€ ì—†ëŠ”ì§€ êµ¬ë¶„
+		if (tok.index_num >= 0)																				// operator ê°€ inst_fileì— ìˆëŠ”ê²½ìš°
 		{
-																											// operand °³¼ö È®ÀÎ °¡´É
-			if (inst_table[isop][0].ops == 0)																// operand°¡ 0°³ÀÏ¶§ -> ´ÙÀ½ ÅäÅ« = comment or ¾øÀ½ 
+																											// operand ê°œìˆ˜ í™•ì¸ ê°€ëŠ¥
+			if (inst_table[tok.index_num][0].ops == 0)														// operandê°€ 0ê°œì¼ë•Œ -> ë‹¤ìŒ í† í° = comment or ì—†ìŒ 
 			{
-				if (temp == NULL)																			// ´ÙÀ½ ÅäÅ« ¾øÀ»¶§
+				if (temp == NULL)																			// ë‹¤ìŒ í† í° ì—†ì„ë•Œ
 				{
-					strcpy(tok.comment, "");
-					int k, j = 0;																			// operand ºĞ¸®
-					for (k = 0; k < MAX_OPERAND; k++)
-					{
-						*tok.operand[k] = malloc(20);														// operand ÅäÅ« ¹è¿­ °ø°£ ÇÒ´ç
-						memset(tok.operand[k], NULL, 20);													// operand ÅäÅ« ¹è¿­ ÃÊ±âÈ­
-					}
-					*token_table[token_line] = tok;
+					*token_table[token_line] = tok;															// token_tableì— ì €ì¥
 					token_line++;
-
 					return 0;
 				}
-				else																						// ´ÙÀ½ ÅäÅ« = comment
+				else																						// ë‹¤ìŒ í† í° = comment
 				{
-					for (int k = 0; k < MAX_OPERAND; k++)
-					{
-						*tok.operand[k] = malloc(20);														// operand ÅäÅ« ¹è¿­ °ø°£ ÇÒ´ç
-						memset(tok.operand[k], NULL, 20);													// operand ÅäÅ« ¹è¿­ ÃÊ±âÈ­
-					}
-					*tok.comment = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));				// comment ÅäÅ« °ø°£ ÇÒ´ç
-					strcpy(tok.comment, temp);																// comment ÅäÅ« ÀÔ·Â	
-					*token_table[token_line] = tok;
+					strcpy(tok.comment, temp);																// comment í† í° ì…ë ¥	
+					*token_table[token_line] = tok;															// token_tableì— ì €ì¥
 					token_line++;
 					return 0;
 				}
 
 			}
-			else																							//´ÙÀ½ ÅäÅ« = operand																	
+			else																							//ë‹¤ìŒ í† í° = operand																	
 			{
-				char* optemp = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));					// operand ÅäÅ«À» ¼¼ºĞÇÏ±â À§ÇÑ ÀÓ½Ã ÅäÅ« °ø°£ ÇÒ´ç
-				strcpy(optemp, temp);																		// operand ºĞ¸®¸¦ À§ÇÑ ÀÓ½Ã ÀúÀå
+				char* optemp = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));					// operand í† í°ì„ ì„¸ë¶„í•˜ê¸° ìœ„í•œ ì„ì‹œ í† í° ê³µê°„ í• ë‹¹
+				strcpy(optemp, temp);																		// operand ë¶„ë¦¬ë¥¼ ìœ„í•œ ì„ì‹œ ì €ì¥
 
 
-				temp = strtok(NULL, "	");																	//´ÙÀ½ ÅäÅ« ºĞ¸®
-				if (temp == NULL)																			// ´ÙÀ½ ÅäÅ« ¾øÀ»¶§
+				temp = strtok(NULL, "\t");																	//ë‹¤ìŒ í† í° ë¶„ë¦¬
+				if (temp == NULL)																			// ë‹¤ìŒ í† í° ì—†ì„ë•Œ
 				{
-					int k, j = 0;																			// operand ºĞ¸®
-					for (k = 0; k < MAX_OPERAND; k++)
-					{
-						*tok.operand[k] = malloc(20);														// operand ÅäÅ« ¹è¿­ °ø°£ ÇÒ´ç
-						memset(tok.operand[k], NULL, 20);													// operand ÅäÅ« ¹è¿­ ÃÊ±âÈ­
-					}
-					optemp = strtok(optemp, ",");															// operand ÅäÅ« ºĞ¸® ¹× ÀÔ·Â ·çÆ¾
+					optemp = strtok(optemp, ",");															// operand í† í° ë¶„ë¦¬ ë° ì…ë ¥ ë£¨í‹´
 					while (optemp != NULL)
 					{
-						strcpy(tok.operand[j++], optemp);
+						strcpy(tok.operand[j++], optemp);													// operand ì…ë ¥
 						optemp = strtok(NULL, ",");
 					}
-					for (k = 0; k < MAX_OPERAND; k++)
-					{
-						if (strcmp(tok.operand[k], "") == 0)
-							*tok.operand[k] = NULL;
-					}
-					strcpy(tok.comment, "");
-					*token_table[token_line] = tok;
+					
+					*token_table[token_line] = tok;															// token_tableì— ì €ì¥
 					token_line++;
 					return 0;
 				}
-				else // ´ÙÀ½ ÅäÅ« = comment 
+				else																						// ë‹¤ìŒ í† í° = comment 
 				{
-					*tok.comment = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));				// comment ÅäÅ« °ø°£ ÇÒ´ç
-					strcpy(tok.comment, temp);											  					// comment ÅäÅ« ÀÔ·Â
+					strcpy(tok.comment, temp);											  					// comment í† í° ì…ë ¥
 
-					int k, j = 0;																			// operand ºĞ¸®
-					for (k = 0; k < MAX_OPERAND; k++)
-					{
-						*tok.operand[k] = malloc(20);														// operand ÅäÅ« ¹è¿­ °ø°£ ÇÒ´ç
-						memset(tok.operand[k], NULL, 20);													// operand ÅäÅ« ¹è¿­ ÃÊ±âÈ­
-					}
-					optemp = strtok(optemp, ",");															// operand ÅäÅ« ºĞ¸® ¹× ÀÔ·Â ·çÆ¾
+					optemp = strtok(optemp, ",");															// operand í† í° ë¶„ë¦¬ ë° ì…ë ¥ ë£¨í‹´
 					while (optemp != NULL)
 					{
-						strcpy(tok.operand[j++], optemp);
+						strcpy(tok.operand[j++], optemp);													// operand ì…ë ¥
 						optemp = strtok(NULL, ",");
 					}
-					for (k = 0; k < MAX_OPERAND; k++)
-					{
-						if (strcmp(token_table[token_line]->operand[k], "") == 0)
-							*tok.operand[k] = NULL;
-					}
-					*token_table[token_line] = tok;
+					
+					*token_table[token_line] = tok;															// token_tableì— ì €ì¥
 					token_line++;
 					return 0;
 				}
@@ -320,175 +297,107 @@ int token_parsing(char* str)
 			}
 
 		}
-		else																								// inst_file ¿¡ ¾ø´Â operatorÀÎ °æ¿ì
+		else																								// inst_file ì— ì—†ëŠ” operatorì¸ ê²½ìš°
 		{
-			if (temp == NULL)																				// inst_file ¿¡ ¾ø´Â operatorÀÌ¸é¼­ operand¿Í comment¸ğµÎ Á¸Àç ÇÏÁö ¾ÊÀ» °æ¿ì
+			if (temp == NULL)																				// inst_file ì— ì—†ëŠ” operatorì´ë©´ì„œ operandì™€ commentëª¨ë‘ ì¡´ì¬ í•˜ì§€ ì•Šì„ ê²½ìš°
 			{
-				strcpy(tok.comment, "");
-				int k, j = 0;																				// operand ºĞ¸®
-				for (k = 0; k < MAX_OPERAND; k++)
-				{
-					*tok.operand[k] = malloc(20);															// operand ÅäÅ« ¹è¿­ °ø°£ ÇÒ´ç
-					memset(tok.operand[k], NULL, 20);														// operand ÅäÅ« ¹è¿­ ÃÊ±âÈ­
-				}
-				*token_table[token_line] = tok;
+				*token_table[token_line] = tok;																// token_tableì— ì €ì¥
 				token_line++;
 				return 0;
 			}
-			char* optemp = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));						// operand ÅäÅ«À» ¼¼ºĞÇÏ±â À§ÇÑ ÀÓ½Ã ÅäÅ« °ø°£ ÇÒ´ç
-			strcpy(optemp, temp);																			// operand ºĞ¸®¸¦ À§ÇÑ ÀÓ½Ã ÀúÀå							
+			char* optemp = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));						// operand í† í°ì„ ì„¸ë¶„í•˜ê¸° ìœ„í•œ ì„ì‹œ í† í° ê³µê°„ í• ë‹¹
+			strcpy(optemp, temp);																			// operand ë¶„ë¦¬ë¥¼ ìœ„í•œ ì„ì‹œ ì €ì¥							
 
 			temp = strtok(NULL, "\t");
-			if (temp == NULL)																				// comment ¾øÀ»¶§
+			if (temp == NULL)																				// comment ì—†ì„ë•Œ
 			{
-				int k, j = 0;																				// operand ºĞ¸®
-				for (k = 0; k < MAX_OPERAND; k++)
-				{
-					*tok.operand[k] = malloc(20);
-					memset(tok.operand[k], NULL, 20);
-				}
 				optemp = strtok(optemp, ",");
 				while (optemp != NULL)
 				{
-					strcpy(tok.operand[j++], optemp);
+					strcpy(tok.operand[j++], optemp);														// operand ì…ë ¥
 					optemp = strtok(NULL, ",");
 				}
-				for (k = 0; k < MAX_OPERAND; k++)
-				{
-					if (strcmp(tok.operand[k], "") == 0)
-						*tok.operand[k] = NULL;
-				}
-				strcpy(tok.comment, "");
-				*token_table[token_line] = tok;
+				
+				*token_table[token_line] = tok;																// token_tableì— ì €ì¥
 				token_line++;
 				return 0;
 			}
-			else																							// comment ÀÖÀ»¶§
+			else																							// comment ìˆì„ë•Œ
 			{
-				*tok.comment = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));
 				strcpy(tok.comment, temp);
 
-				int k, j = 0;																				// operand ºĞ¸®
-				for (k = 0; k < MAX_OPERAND; k++)
-				{
-					*tok.operand[k] = malloc(20);
-					memset(tok.operand[k], NULL, 20);
-				}
 				optemp = strtok(optemp, ",");
 				while (optemp != NULL)
 				{
-					strcpy(tok.operand[j++], optemp);
+					strcpy(tok.operand[j++], optemp);														// operand ì…ë ¥
 					optemp = strtok(NULL, ",");
 				}
-				*token_table[token_line] = tok;
+				*token_table[token_line] = tok;																// token_tableì— ì €ì¥
 				token_line++;
 				return 0;
 			}
-
 		}
-
-		*token_table[token_line] = tok;
 	}
-	else if (buf[0] == '\t')
+	else if (buf[0] == '\t')																				// label ì—†ì„ ë•Œ
 	{
-		tok.label = "";
+		tok.label = NULL;
 		tok.operator=(char*)calloc(strlen(temp) / sizeof(char), sizeof(char));								// operator parsing
 		strcpy(tok.operator, temp);
 
 		temp = strtok(NULL, "\t");
-		int isop = search_opcode(tok.operator);																// ´ÙÀ½ ÅäÅ«ÀÌ operandÀÎÁö commentÀÎÁö ¾ø´ÂÁö ±¸ºĞ
-		opcode[token_line] = isop;																			// operatorÀÇ index ÀúÀå
+		tok.index_num = search_opcode(tok.operator);														// ë‹¤ìŒ í† í°ì´ operandì¸ì§€ commentì¸ì§€ ì—†ëŠ”ì§€ êµ¬ë¶„
 
-		if (isop >= 0)																						//operator °¡ inst_file¿¡ ÀÖ´Â°æ¿ì
+		if (tok.index_num >= 0)																				//operator ê°€ inst_fileì— ìˆëŠ”ê²½ìš°
 		{
-																											//operand °³¼ö È®ÀÎ °¡´É
-			if (inst_table[isop][0].ops == 0)																//operand°¡ 0°³ÀÏ¶§ -> ´ÙÀ½ ÅäÅ« = comment or ¾øÀ½ 
+																											//operand ê°œìˆ˜ í™•ì¸ ê°€ëŠ¥
+			if (inst_table[tok.index_num][0].ops == 0)														//operandê°€ 0ê°œì¼ë•Œ -> ë‹¤ìŒ í† í° = comment or ì—†ìŒ 
 			{
-				if (temp == NULL)																			// ´ÙÀ½ ÅäÅ« ¾øÀ»¶§
+				if (temp == NULL)																			// ë‹¤ìŒ í† í° ì—†ì„ë•Œ
 				{
-					strcpy(tok.comment, "");
-					int k, j = 0;																			// operand ºĞ¸®
-					for (k = 0; k < MAX_OPERAND; k++)
-					{
-						*tok.operand[k] = malloc(20);														// operand ÅäÅ« ¹è¿­ °ø°£ ÇÒ´ç
-						memset(tok.operand[k], NULL, 20);													// operand ÅäÅ« ¹è¿­ ÃÊ±âÈ­
-					}
-					*token_table[token_line] = tok;
+					*token_table[token_line] = tok;															// token_tableì— ì €ì¥
 					token_line++;
 					return 0;
 				}
-				else																						// ´ÙÀ½ ÅäÅ« = comment
+				else																						// ë‹¤ìŒ í† í° = comment
 				{
-					strcpy(tok.comment, "");
-					int k, j = 0;																			// operand ºĞ¸®
-					for (k = 0; k < MAX_OPERAND; k++)
-					{
-						*tok.operand[k] = malloc(20);														// operand ÅäÅ« ¹è¿­ °ø°£ ÇÒ´ç
-						memset(tok.operand[k], NULL, 20);													// operand ÅäÅ« ¹è¿­ ÃÊ±âÈ­
-					}
-					*tok.comment = malloc(sizeof(temp));													// comment ÅäÅ« °ø°£ ÇÒ´ç
-					strcpy(tok.comment, temp);																// comment ÅäÅ« ÀÔ·Â	
-					*token_table[token_line] = tok;
+					strcpy(tok.comment, temp);																// comment í† í° ì…ë ¥	
+					*token_table[token_line] = tok;															// token_tableì— ì €ì¥
 					token_line++;
 					return 0;
 				}
 
 			}
-			else																							//´ÙÀ½ ÅäÅ« = operand																	
+			else																							//ë‹¤ìŒ í† í° = operand																	
 			{
-				char* optemp = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));					// operand ÅäÅ«À» ¼¼ºĞÇÏ±â À§ÇÑ ÀÓ½Ã ÅäÅ« °ø°£ ÇÒ´ç
-				strcpy(optemp, temp);																		// operand ºĞ¸®¸¦ À§ÇÑ ÀÓ½Ã ÀúÀå
+				char* optemp = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));					// operand í† í°ì„ ì„¸ë¶„í•˜ê¸° ìœ„í•œ ì„ì‹œ í† í° ê³µê°„ í• ë‹¹
+				strcpy(optemp, temp);																		// operand ë¶„ë¦¬ë¥¼ ìœ„í•œ ì„ì‹œ ì €ì¥
 
-
-				temp = strtok(NULL, "\t");																	//´ÙÀ½ ÅäÅ« ºĞ¸®
-				if (temp == NULL)																			// ´ÙÀ½ ÅäÅ« ¾øÀ»¶§
+				temp = strtok(NULL, "\t");																	//ë‹¤ìŒ í† í° ë¶„ë¦¬
+				if (temp == NULL)																			// ë‹¤ìŒ í† í° ì—†ì„ë•Œ
 				{
-					int k, j = 0;																			// operand ºĞ¸®
-					for (k = 0; k < MAX_OPERAND; k++)
-					{
-						*tok.operand[k] = malloc(20);														// operand ÅäÅ« ¹è¿­ °ø°£ ÇÒ´ç
-						memset(tok.operand[k], NULL, 20);													// operand ÅäÅ« ¹è¿­ ÃÊ±âÈ­
-					}
-					optemp = strtok(optemp, ",");															// operand ÅäÅ« ºĞ¸® ¹× ÀÔ·Â ·çÆ¾
+					optemp = strtok(optemp, ",");															// operand í† í° ë¶„ë¦¬ ë° ì…ë ¥ ë£¨í‹´
 					while (optemp != NULL)
 					{
-						strcpy(tok.operand[j++], optemp);
+						strcpy(tok.operand[j++], optemp);													// operand ì…ë ¥
 						optemp = strtok(NULL, ",");
 					}
-					for (k = 0; k < MAX_OPERAND; k++)
-					{
-						if (strcmp(tok.operand[k], "") == 0)
-							*tok.operand[k] = NULL;
-					}
-					strcpy(tok.comment, "");
-					*token_table[token_line] = tok;
+					
+					*token_table[token_line] = tok;															// token_tableì— ì €ì¥
 					token_line++;
 					return 0;
 				}
-				else // ´ÙÀ½ ÅäÅ« = comment 
+				else																						// ë‹¤ìŒ í† í° = comment 
 				{
-					*tok.comment = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));				// comment ÅäÅ« °ø°£ ÇÒ´ç
-					strcpy(tok.comment, temp);											  					// comment ÅäÅ« ÀÔ·Â
+					strcpy(tok.comment, temp);											  					// comment í† í° ì…ë ¥
 
-					int k, j = 0;																			// operand ºĞ¸®
-					for (k = 0; k < MAX_OPERAND; k++)
-					{
-						*tok.operand[k] = malloc(20);														// operand ÅäÅ« ¹è¿­ °ø°£ ÇÒ´ç
-						memset(tok.operand[k], NULL, 20);													// operand ÅäÅ« ¹è¿­ ÃÊ±âÈ­
-
-					}
-					optemp = strtok(optemp, ",");															// operand ÅäÅ« ºĞ¸® ¹× ÀÔ·Â ·çÆ¾
+					optemp = strtok(optemp, ",");															// operand í† í° ë¶„ë¦¬ ë° ì…ë ¥ ë£¨í‹´
 					while (optemp != NULL)
 					{
-						strcpy(tok.operand[j++], optemp);
+						strcpy(tok.operand[j++], optemp);													// operand ì…ë ¥
 						optemp = strtok(NULL, ",");
 					}
-					for (k = 0; k < MAX_OPERAND; k++)
-					{
-						if (strcmp(tok.operand[k], "") == 0)
-							*tok.operand[k] = NULL;
-					}
-					*token_table[token_line] = tok;
+					
+					*token_table[token_line] = tok;															// token_tableì— ì €ì¥
 					token_line++;
 					return 0;
 				}
@@ -496,72 +405,43 @@ int token_parsing(char* str)
 			}
 
 		}
-		else																								// inst_file ¿¡ ¾ø´Â operatorÀÎ °æ¿ì
+		else																								// inst_file ì— ì—†ëŠ” operatorì¸ ê²½ìš°
 		{
-			if (temp == NULL)																				// inst_file ¿¡ ¾ø´Â operatorÀÌ¸é¼­ operand¿Í comment¸ğµÎ Á¸Àç ÇÏÁö ¾ÊÀ» °æ¿ì
+			if (temp == NULL)																				// inst_file ì— ì—†ëŠ” operatorì´ë©´ì„œ operandì™€ commentëª¨ë‘ ì¡´ì¬ í•˜ì§€ ì•Šì„ ê²½ìš°
 			{
-				strcpy(tok.comment, "");
-				int k, j = 0;																				// operand ºĞ¸®
-				for (k = 0; k < MAX_OPERAND; k++)
-				{
-					*tok.operand[k] = malloc(20);															// operand ÅäÅ« ¹è¿­ °ø°£ ÇÒ´ç
-					memset(tok.operand[k], NULL, 20);														// operand ÅäÅ« ¹è¿­ ÃÊ±âÈ­
-				}
-				*token_table[token_line] = tok;
+				*token_table[token_line] = tok;																// token_tableì— ì €ì¥
 				token_line++;
 				return 0;
 			}
-			char* optemp = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));						// operand ÅäÅ«À» ¼¼ºĞÇÏ±â À§ÇÑ ÀÓ½Ã ÅäÅ« °ø°£ ÇÒ´ç
-			strcpy(optemp, temp);																			// operand ºĞ¸®¸¦ À§ÇÑ ÀÓ½Ã ÀúÀå							
+			char* optemp = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));						// operand í† í°ì„ ì„¸ë¶„í•˜ê¸° ìœ„í•œ ì„ì‹œ í† í° ê³µê°„ í• ë‹¹
+			strcpy(optemp, temp);																			// operand ë¶„ë¦¬ë¥¼ ìœ„í•œ ì„ì‹œ ì €ì¥							
 
 			temp = strtok(NULL, "\t");
-			if (temp == NULL)																				// comment ¾øÀ»¶§
+			if (temp == NULL)																				// comment ì—†ì„ë•Œ
 			{
-				int k, j = 0;																				//operand ºĞ¸®
-				for (k = 0; k < MAX_OPERAND; k++)
-				{
-					*tok.operand[k] = malloc(20);															// operand ÅäÅ« ¹è¿­ °ø°£ ÇÒ´ç
-					memset(tok.operand[k], NULL, 20);														// operand ÅäÅ« ¹è¿­ ÃÊ±âÈ­
-				}
 				optemp = strtok(optemp, ",");
 				while (optemp != NULL)
 				{
-					strcpy(tok.operand[j++], optemp);
+					strcpy(tok.operand[j++], optemp);														// operand ì €ì¥
 					optemp = strtok(NULL, ",");
 				}
-				for (k = 0; k < MAX_OPERAND; k++)
-				{
-					if (strcmp(tok.operand[k], "") == 0)
-						*tok.operand[k] = NULL;
-				}
-				strcpy(tok.comment, "");
-				*token_table[token_line] = tok;
+	
+				*token_table[token_line] = tok;																// token_tableì— ì €ì¥
 				token_line++;
 				return 0;
 			}
-			else																							// comment ÀÖÀ»¶§
+			else																							// comment ìˆì„ë•Œ
 			{
-				*tok.comment = (char*)calloc(strlen(temp) / sizeof(char), sizeof(char));
 				strcpy(tok.comment, temp);
 
-				int k, j = 0;																				// operand ºĞ¸®
-				for (k = 0; k < MAX_OPERAND; k++)
-				{
-					*tok.operand[k] = malloc(20);															// operand ÅäÅ« ¹è¿­ °ø°£ ÇÒ´ç
-					memset(tok.operand[k], NULL, 20);														// operand ÅäÅ« ¹è¿­ ÃÊ±âÈ­
-				}
 				optemp = strtok(optemp, ",");
 				while (optemp != NULL)
 				{
-					strcpy(tok.operand[j++], optemp);
+					strcpy(tok.operand[j++], optemp);														// operand ì €ì¥
 					optemp = strtok(NULL, ",");
 				}
-				for (k = 0; k < MAX_OPERAND; k++)
-				{
-					if (strcmp(tok.operand[k], "") == 0)
-						*tok.operand[k] = NULL;
-				}
-				*token_table[token_line] = tok;
+				
+				*token_table[token_line] = tok;																// token_tableì— ì €ì¥
 				token_line++;
 				return 0;
 			}
@@ -571,26 +451,32 @@ int token_parsing(char* str)
 }
 
 /* ----------------------------------------------------------------------------------
- * ¼³¸í : ÀÔ·Â ¹®ÀÚ¿­ÀÌ ±â°è¾î ÄÚµåÀÎÁö¸¦ °Ë»çÇÏ´Â ÇÔ¼öÀÌ´Ù.
- * ¸Å°è : ÅäÅ« ´ÜÀ§·Î ±¸ºĞµÈ ¹®ÀÚ¿­
- * ¹İÈ¯ : Á¤»óÁ¾·á = ±â°è¾î Å×ÀÌºí ÀÎµ¦½º, ¿¡·¯ < 0
- * ÁÖÀÇ :
+ * ì„¤ëª… : ì…ë ¥ ë¬¸ìì—´ì´ ê¸°ê³„ì–´ ì½”ë“œì¸ì§€ë¥¼ ê²€ì‚¬í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+ * ë§¤ê³„ : í† í° ë‹¨ìœ„ë¡œ êµ¬ë¶„ëœ ë¬¸ìì—´
+ * ë°˜í™˜ : ì •ìƒì¢…ë£Œ = ê¸°ê³„ì–´ í…Œì´ë¸” ì¸ë±ìŠ¤, ì—ëŸ¬ < 0
+ * ì£¼ì˜ :
  *
  * ----------------------------------------------------------------------------------
  */
 int search_opcode(char* str)
 {
 	int index = 0;
-	if (str[0] == "+") {
-		for (int i = 1; str[i]; i++) {
-			str[i - 1] = str[i];																			// operator ¾Õ¿¡ + ºÙ¾îÀÖÀ» °æ¿ì Á¦°Å
+	char* string = calloc(10, sizeof(char));
+	strcpy(string, str);
+	if (strncmp(string,"+",1)==0) 
+	{
+		for (int i = 1; string[i]; i++) 
+		{
+			string[i - 1] = string[i];																		// operator ì•ì— + ë¶™ì–´ìˆì„ ê²½ìš° ì œê±°
+			string[i] = NULL;
 		}
 	}
-	while (inst_table[index] != NULL) {
+	while (inst_table[index] != NULL) 
+	{
 
-		if (strcmp(inst_table[index][0].str, str)==0) {
+		if (strcmp(inst_table[index][0].str, string)==0) 
 		 	return index;
-		 }
+
 		index++;
 
 	}
@@ -598,162 +484,321 @@ int search_opcode(char* str)
 }
 
 /* ----------------------------------------------------------------------------------
-* ¼³¸í : ¾î¼Àºí¸® ÄÚµå¸¦ À§ÇÑ ÆĞ½º1°úÁ¤À» ¼öÇàÇÏ´Â ÇÔ¼öÀÌ´Ù.
-*		   ÆĞ½º1¿¡¼­´Â..
-*		   1. ÇÁ·Î±×·¥ ¼Ò½º¸¦ ½ºÄµÇÏ¿© ÇØ´çÇÏ´Â ÅäÅ«´ÜÀ§·Î ºĞ¸®ÇÏ¿© ÇÁ·Î±×·¥ ¶óÀÎº° ÅäÅ«
-*		   Å×ÀÌºíÀ» »ı¼ºÇÑ´Ù.
+* ì„¤ëª… : ì–´ì…ˆë¸”ë¦¬ ì½”ë“œë¥¼ ìœ„í•œ íŒ¨ìŠ¤1ê³¼ì •ì„ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+*		   íŒ¨ìŠ¤1ì—ì„œëŠ”..
+*		   1. í”„ë¡œê·¸ë¨ ì†ŒìŠ¤ë¥¼ ìŠ¤ìº”í•˜ì—¬ í•´ë‹¹í•˜ëŠ” í† í°ë‹¨ìœ„ë¡œ ë¶„ë¦¬í•˜ì—¬ í”„ë¡œê·¸ë¨ ë¼ì¸ë³„ í† í°
+*		   í…Œì´ë¸”ì„ ìƒì„±í•œë‹¤.
 *
-* ¸Å°è : ¾øÀ½
-* ¹İÈ¯ : Á¤»ó Á¾·á = 0 , ¿¡·¯ = < 0
-* ÁÖÀÇ : ÇöÀç ÃÊ±â ¹öÀü¿¡¼­´Â ¿¡·¯¿¡ ´ëÇÑ °Ë»ç¸¦ ÇÏÁö ¾Ê°í ³Ñ¾î°£ »óÅÂÀÌ´Ù.
-*	  µû¶ó¼­ ¿¡·¯¿¡ ´ëÇÑ °Ë»ç ·çÆ¾À» Ãß°¡ÇØ¾ß ÇÑ´Ù.
+* ë§¤ê³„ : ì—†ìŒ
+* ë°˜í™˜ : ì •ìƒ ì¢…ë£Œ = 0 , ì—ëŸ¬ = < 0
+* ì£¼ì˜ : í˜„ì¬ ì´ˆê¸° ë²„ì „ì—ì„œëŠ” ì—ëŸ¬ì— ëŒ€í•œ ê²€ì‚¬ë¥¼ í•˜ì§€ ì•Šê³  ë„˜ì–´ê°„ ìƒíƒœì´ë‹¤.
+*	  ë”°ë¼ì„œ ì—ëŸ¬ì— ëŒ€í•œ ê²€ì‚¬ ë£¨í‹´ì„ ì¶”ê°€í•´ì•¼ í•œë‹¤.
 *
 * -----------------------------------------------------------------------------------
 */
 static int assem_pass1(void)
 {
-	int num = 0;
+	int num = 0;																							// input_dataì™€ token_tableì„ ìœ„í•œ ì¸ë±ìŠ¤ìš© ë³€ìˆ˜ ì„ ì–¸
 	token_line = 0;
-	while (input_data[num] != NULL) {
-		int a=token_parsing(input_data[num]);
-		if(a<0) return -1;
+	int a = 0;																								// ì£¼ì†Œê°’ ì €ì¥ì„ ìœ„í•œ ë³€ìˆ˜ ì„ ì–¸
+	while (num<line_num) {
+		sym_table[num] = (symbol*)calloc(1, sizeof(symbol));
+		literal_table[num] = (literal*)calloc(1, sizeof(literal));
+		literal_table[num]->literal = NULL;
+		if(token_parsing(input_data[num])<0) return -1;
+		if (token_table[num]->operator == NULL)
+		{
+			num++;
+			continue;
+		}
+
+		if (num == 0)
+		{
+			token_table[num]->addr = a;																		// ì‹œì‘ì£¼ì†Œ ì €ì¥
+		}
+
+		else if (strcmp(token_table[num]->operator, "CSECT") == 0)											// operatorê°€ CSECTì¸ ê²½ìš°
+		{
+			a = 0;
+			token_table[num]->addr = a;
+		}
+		else if (strcmp(token_table[num]->operator, "RESW") == 0)											// operatorê°€ RESWì¸ ê²½ìš°
+		{
+			token_table[num]->addr = a;
+			a += 3*atoi(token_table[num]->operand[0]);
+		}
+		else if (strcmp(token_table[num]->operator, "RESB") == 0)											// operatorê°€ RESBì¸ ê²½ìš°
+		{
+			token_table[num]->addr = a;
+			a += atoi(token_table[num]->operand[0]);
+		}
+		else if (strcmp(token_table[num]->operator, "EQU") == 0)											// operatorê°€ EQUì¸ ê²½ìš°
+		{
+			if (strcmp(token_table[num]->operand[0], "*") == 0)												// operandê°€ ì—†ëŠ” ê²½ìš°
+			{
+				token_table[num]->addr = a;
+			}
+			else
+			{
+																											// operandê°€ ìˆëŠ” ê²½ìš°
+			}
+			{
+				char* ch = calloc(20, sizeof(char));
+				char* temp;
+				int n1 = 0;
+				int n2 = 0;
+				strcpy(ch, token_table[num]->operand[0]);
+				temp = strtok(ch, "-");
+				for (int i = 0; i < num; i++)
+				{
+					if (strcmp(temp, sym_table[i]->symbol) == 0)
+						n1 = sym_table[i]->addr;
+				}
+				temp = strtok(NULL, "-");
+				for (int i = 0; i < num; i++)
+				{
+					if (strcmp(temp, sym_table[i]->symbol) == 0)
+						n2 = sym_table[i]->addr;
+				}
+				token_table[num]->addr = n1 - n2;
+			}
+		}
+		else if (strcmp(token_table[num]->operator, "BYTE") == 0)											// operatorê°€ BYTEì¸ ê²½ìš°
+		{
+			token_table[num]->addr = a;
+			a += 1;
+
+		}
+		else if (strcmp(token_table[num]->operator, "WORD") == 0)											// operatorê°€ WORDì¸ ê²½ìš°
+		{
+			token_table[num]->addr = a;
+			char* ch = calloc(20, sizeof(char));
+			char* temp;
+			int n1 = 0;
+			int n2 = 0;
+			strcpy(ch, token_table[num]->operand[0]);
+			temp = strtok(ch, "-");
+			for (int i = 0; i < num; i++)
+			{
+				if (strcmp(temp, sym_table[i]->symbol) == 0)
+					n1 = sym_table[i]->addr;
+			}
+			temp = strtok(NULL, "-");
+			for (int i = 0; i < num; i++)
+			{
+				if (strcmp(temp, sym_table[i]->symbol) == 0)
+					n2 = sym_table[i]->addr;
+			}
+			a += n1 - n2;
+
+		}
+		else if (strcmp(token_table[num]->operator, "LTORG") == 0 || num == line_num-1)						// operatorê°€ LTORGì´ê±°ë‚˜ inputì´ ëë‚˜ëŠ” ê²½ìš°
+		{
+			for (int i = 0; i < num; i++)
+			{
+				if (literal_table[i]->literal != NULL && literal_table[i]->addr == 0)
+				{
+					literal_table[i]->addr = a;
+					a += literal_table[i]->length;
+				}
+			}
+		}
+		else if (token_table[num]->index_num >0 || strcmp(token_table[num]->operator, "LDA") == 0)			// operatorê°€ instructionì¸ ê²½ìš°
+		{
+			token_table[num]->addr = a;																		
+			if(inst_table[token_table[num]->index_num]->format1 == 1)										// 1í˜•ì‹
+			{ 
+				a += 1;
+			}
+			else if (inst_table[token_table[num]->index_num]->format1 == 2)									// 2í˜•ì‹
+			{ 
+				a += 2;
+			}
+			else if (inst_table[token_table[num]->index_num]->format1 == 3)
+			{ 
+				if (strncmp(token_table[num]->operator, "+",1) == 0)										// 4í˜•ì‹
+				{
+					a += 4;
+				}
+				else																						// 3í˜•ì‹
+				{
+					a += 3;
+				}
+				
+			}
+			if (strncmp(token_table[num]->operand[0], "=", 1) == 0)											// literalì´ ìˆëŠ”  ê²½ìš°
+			{
+				char* ch = calloc(20, sizeof(char));
+				char* temp;
+				int hex = 0;
+				int check = 0;
+				strcpy(ch, token_table[num]->operand[0]);
+				temp = strtok(ch, "'");
+				if (strncmp(temp, "=X", 2) == 0)
+					hex = 1;
+
+				temp = strtok(NULL, "'");
+				for (int i = 0; i < num; i++)
+				{
+					if (literal_table[i]->literal != NULL && strcmp(literal_table[i]->literal, temp) == 0)
+						check = 1;
+				}
+				if (hex == 0 && check == 0)
+				{
+					literal_table[num]->literal = calloc(10, sizeof(char));
+					strcpy(literal_table[num]->literal, temp);
+					literal_table[num]->length = strlen(temp);
+				}
+				else if (hex == 1 && check == 0)
+				{
+					literal_table[num]->literal = calloc(10, sizeof(char));
+					strcpy(literal_table[num]->literal, temp);
+					literal_table[num]->length = 1;
+				}
+
+
+			}
+		}
+		if (token_table[num]->label !=NULL)																	// symbol table ë§Œë“¤ê¸°
+		{
+			strcpy(sym_table[num]->symbol, token_table[num]->label);
+			sym_table[num]->addr = token_table[num]->addr;
+		}
 		num++;
 	}
+
 	return 0;
 
-	/* input_dataÀÇ ¹®ÀÚ¿­À» ÇÑÁÙ¾¿ ÀÔ·Â ¹Ş¾Æ¼­
-	 * token_parsing()À» È£ÃâÇÏ¿© token_unit¿¡ ÀúÀå
-	 */
 }
 
-/* ----------------------------------------------------------------------------------
-* ¼³¸í : ÀÔ·ÂµÈ ¹®ÀÚ¿­ÀÇ ÀÌ¸§À» °¡Áø ÆÄÀÏ¿¡ ÇÁ·Î±×·¥ÀÇ °á°ú¸¦ ÀúÀåÇÏ´Â ÇÔ¼öÀÌ´Ù.
-*        ¿©±â¼­ Ãâ·ÂµÇ´Â ³»¿ëÀº ¸í·É¾î ¿·¿¡ OPCODE°¡ ±â·ÏµÈ Ç¥(°úÁ¦ 3¹ø) ÀÌ´Ù.
-* ¸Å°è : »ı¼ºÇÒ ¿ÀºêÁ§Æ® ÆÄÀÏ¸í
-* ¹İÈ¯ : ¾øÀ½
-* ÁÖÀÇ : ¸¸¾à ÀÎÀÚ·Î NULL°ªÀÌ µé¾î¿Â´Ù¸é ÇÁ·Î±×·¥ÀÇ °á°ú¸¦ Ç¥ÁØÃâ·ÂÀ¸·Î º¸³»¾î
-*        È­¸é¿¡ Ãâ·ÂÇØÁØ´Ù.
-*        ¶ÇÇÑ °úÁ¦ 3¹ø¿¡¼­¸¸ ¾²ÀÌ´Â ÇÔ¼öÀÌ¹Ç·Î ÀÌÈÄÀÇ ÇÁ·ÎÁ§Æ®¿¡¼­´Â »ç¿ëµÇÁö ¾Ê´Â´Ù.
-* -----------------------------------------------------------------------------------
-*/
-/*void make_opcode_output(char* file_name)
-{
-	FILE* file;
-	line_num = 0;
-	if (file_name == NULL) {
-		while (token_table[line_num] != NULL) {
-			if (token_table[line_num][0].operand[0] != NULL) {
-				if (token_table[line_num][0].operand[1] != NULL) {
-					if (token_table[line_num][0].operand[2] != NULL) {
-						if (opcode[line_num] >= 0) printf("%s\t%s\t%s,%s,%s\t%x\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0], token_table[line_num][0].operand[1], token_table[line_num][0].operand[2], inst_table[opcode[line_num]][0].op);
-						else  printf("%s\t%s\t%s,%s,%s\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0], token_table[line_num][0].operand[1], token_table[line_num][0].operand[2]);
-					}
-					else {
-						if (opcode[line_num] >= 0) printf("%s\t%s\t%s,%s\t%x\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0], token_table[line_num][0].operand[1], inst_table[opcode[line_num]][0].op);
-						else  printf("%s\t%s\t%s,%s\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0], token_table[line_num][0].operand[1]);
-					}
-				}
-				else {
-					if (opcode[line_num] >= 0) printf("%s\t%s\t%s\t%x\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0], inst_table[opcode[line_num]][0].op);
-					else  printf("%s\t%s\t%s\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0]);
-				}
-			}
-			else {
-				if (opcode[line_num] >= 0) printf("%s\t%s\t\t%x\n", token_table[line_num][0].label, token_table[line_num][0].operator, inst_table[opcode[line_num]][0].op);
-				else  printf("%s\t%s\t\n", token_table[line_num][0].label, token_table[line_num][0].operator);
-			}
-
-			line_num++;
-		}
-	}
-	else {
-		file = fopen(file_name, "w");
-		while (token_table[line_num] != NULL) {
-			if (token_table[line_num][0].operand[0][0] != NULL) {
-				if (token_table[line_num][0].operand[1][0] != NULL) {
-					if (token_table[line_num][0].operand[2][0] != NULL) {
-						if (opcode[line_num] >= 0) fprintf(file, "%s\t%s\t%s,%s,%s\t%x\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0], token_table[line_num][0].operand[1], token_table[line_num][0].operand[2], inst_table[opcode[line_num]][0].op);
-						else  fprintf(file, "%s\t%s\t%s,%s,%s\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0], token_table[line_num][0].operand[1], token_table[line_num][0].operand[2]);
-					}
-					else {
-						if (opcode[line_num] >= 0) fprintf(file, "%s\t%s\t%s,%s\t%x\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0], token_table[line_num][0].operand[1], inst_table[opcode[line_num]][0].op);
-						else  fprintf(file, "%s\t%s\t%s,%s\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0], token_table[line_num][0].operand[1]);
-					}
-				}
-				else {
-					if (opcode[line_num] >= 0) fprintf(file, "%s\t%s\t%s\t%x\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0], inst_table[opcode[line_num]][0].op);
-					else  fprintf(file, "%s\t%s\t%s\n", token_table[line_num][0].label, token_table[line_num][0].operator, token_table[line_num][0].operand[0]);
-				}
-			}
-			else {
-				if (token_table[line_num][0].comment[0] == 46) fprintf(file, "%s\n", token_table[line_num][0].comment);
-				else {
-					if (opcode[line_num] >= 0) fprintf(file, "%s\t%s\t\t%x\n", token_table[line_num][0].label, token_table[line_num][0].operator, inst_table[opcode[line_num]][0].op);
-					else  fprintf(file, "%s\t%s\t\n", token_table[line_num][0].label, token_table[line_num][0].operator);
-				}
-			}
-			fflush(file);
-
-			line_num++;
-		}
-		fclose(file);
-	}
-	return;
-}*/
 
 /* ----------------------------------------------------------------------------------
-* ¼³¸í : ÀÔ·ÂµÈ ¹®ÀÚ¿­ÀÇ ÀÌ¸§À» °¡Áø ÆÄÀÏ¿¡ ÇÁ·Î±×·¥ÀÇ °á°ú¸¦ ÀúÀåÇÏ´Â ÇÔ¼öÀÌ´Ù.
-*        ¿©±â¼­ Ãâ·ÂµÇ´Â ³»¿ëÀº SYMBOLº° ÁÖ¼Ò°ªÀÌ ÀúÀåµÈ TABLEÀÌ´Ù.
-* ¸Å°è : »ı¼ºÇÒ ¿ÀºêÁ§Æ® ÆÄÀÏ¸í
-* ¹İÈ¯ : ¾øÀ½
-* ÁÖÀÇ : ¸¸¾à ÀÎÀÚ·Î NULL°ªÀÌ µé¾î¿Â´Ù¸é ÇÁ·Î±×·¥ÀÇ °á°ú¸¦ Ç¥ÁØÃâ·ÂÀ¸·Î º¸³»¾î
-*        È­¸é¿¡ Ãâ·ÂÇØÁØ´Ù.
+* ì„¤ëª… : ì…ë ¥ëœ ë¬¸ìì—´ì˜ ì´ë¦„ì„ ê°€ì§„ íŒŒì¼ì— í”„ë¡œê·¸ë¨ì˜ ê²°ê³¼ë¥¼ ì €ì¥í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+*        ì—¬ê¸°ì„œ ì¶œë ¥ë˜ëŠ” ë‚´ìš©ì€ SYMBOLë³„ ì£¼ì†Œê°’ì´ ì €ì¥ëœ TABLEì´ë‹¤.
+* ë§¤ê³„ : ìƒì„±í•  ì˜¤ë¸Œì íŠ¸ íŒŒì¼ëª…
+* ë°˜í™˜ : ì—†ìŒ
+* ì£¼ì˜ : ë§Œì•½ ì¸ìë¡œ NULLê°’ì´ ë“¤ì–´ì˜¨ë‹¤ë©´ í”„ë¡œê·¸ë¨ì˜ ê²°ê³¼ë¥¼ í‘œì¤€ì¶œë ¥ìœ¼ë¡œ ë³´ë‚´ì–´
+*        í™”ë©´ì— ì¶œë ¥í•´ì¤€ë‹¤.
 *
 * -----------------------------------------------------------------------------------
 */
 void make_symtab_output(char* file_name)
 {
-	/* add your code here */
+	FILE* file;
+	int num = 0;
+	if (file_name == NULL)																					// fileëª…ì„ ë°›ì§€ ì•Šì€ ê²½ìš°
+	{
+		while (num<line_num) 
+		{
+			if (sym_table[num]->symbol[0] != 0)
+				printf("%s			%x\n", sym_table[num]->symbol, sym_table[num]->addr);
+			num++;
+		}
+		printf("\n");
+	}
+	else {																									// fileëª…ì„ ë°›ì€ ê²½ìš°
+		file = fopen(file_name, "w");
+		while (num<line_num) 
+		{
+			if (sym_table[num]->symbol[0] != 0)
+				fprintf(file, "%s			%x\n", sym_table[num]->symbol, sym_table[num]->addr);
+			num++;
+		}
+		fflush(file);
+		fclose(file);
+	}
+	return;
 }
 
 /* ----------------------------------------------------------------------------------
-* ¼³¸í : ÀÔ·ÂµÈ ¹®ÀÚ¿­ÀÇ ÀÌ¸§À» °¡Áø ÆÄÀÏ¿¡ ÇÁ·Î±×·¥ÀÇ °á°ú¸¦ ÀúÀåÇÏ´Â ÇÔ¼öÀÌ´Ù.
-*        ¿©±â¼­ Ãâ·ÂµÇ´Â ³»¿ëÀº LITERALº° ÁÖ¼Ò°ªÀÌ ÀúÀåµÈ TABLEÀÌ´Ù.
-* ¸Å°è : »ı¼ºÇÒ ¿ÀºêÁ§Æ® ÆÄÀÏ¸í
-* ¹İÈ¯ : ¾øÀ½
-* ÁÖÀÇ : ¸¸¾à ÀÎÀÚ·Î NULL°ªÀÌ µé¾î¿Â´Ù¸é ÇÁ·Î±×·¥ÀÇ °á°ú¸¦ Ç¥ÁØÃâ·ÂÀ¸·Î º¸³»¾î
-*        È­¸é¿¡ Ãâ·ÂÇØÁØ´Ù.
+* ì„¤ëª… : ì…ë ¥ëœ ë¬¸ìì—´ì˜ ì´ë¦„ì„ ê°€ì§„ íŒŒì¼ì— í”„ë¡œê·¸ë¨ì˜ ê²°ê³¼ë¥¼ ì €ì¥í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+*        ì—¬ê¸°ì„œ ì¶œë ¥ë˜ëŠ” ë‚´ìš©ì€ LITERALë³„ ì£¼ì†Œê°’ì´ ì €ì¥ëœ TABLEì´ë‹¤.
+* ë§¤ê³„ : ìƒì„±í•  ì˜¤ë¸Œì íŠ¸ íŒŒì¼ëª…
+* ë°˜í™˜ : ì—†ìŒ
+* ì£¼ì˜ : ë§Œì•½ ì¸ìë¡œ NULLê°’ì´ ë“¤ì–´ì˜¨ë‹¤ë©´ í”„ë¡œê·¸ë¨ì˜ ê²°ê³¼ë¥¼ í‘œì¤€ì¶œë ¥ìœ¼ë¡œ ë³´ë‚´ì–´
+*        í™”ë©´ì— ì¶œë ¥í•´ì¤€ë‹¤.
 *
 * -----------------------------------------------------------------------------------
 */
 void make_literaltab_output(char* filen_ame)
 {
-	/* add your code here */
+	FILE* file;
+	int num = 0;
+	if (filen_ame == NULL)																					// fileëª…ì„ ë°›ì§€ ì•Šì€ ê²½ìš°
+	{
+		while (num < line_num)
+		{
+			if (literal_table[num]->literal != NULL)
+				printf("%s			%x\n", literal_table[num]->literal, literal_table[num]->addr);
+			num++;
+		}
+	}
+	else																									// fileëª…ì„ ë°›ì€ ê²½ìš°
+	{
+		file = fopen(filen_ame, "w");
+		while (num < line_num)
+		{
+			if (literal_table[num]->literal != NULL)
+				fprintf(file, "%s			%x\n", literal_table[num]->literal, literal_table[num]->addr);
+			num++;
+		}
+		fclose(file);
+	}
+	return;
 }
 
 /* ----------------------------------------------------------------------------------
-* ¼³¸í : ¾î¼Àºí¸® ÄÚµå¸¦ ±â°è¾î ÄÚµå·Î ¹Ù²Ù±â À§ÇÑ ÆĞ½º2 °úÁ¤À» ¼öÇàÇÏ´Â ÇÔ¼öÀÌ´Ù.
-*		   ÆĞ½º 2¿¡¼­´Â ÇÁ·Î±×·¥À» ±â°è¾î·Î ¹Ù²Ù´Â ÀÛ¾÷Àº ¶óÀÎ ´ÜÀ§·Î ¼öÇàµÈ´Ù.
-*		   ´ÙÀ½°ú °°Àº ÀÛ¾÷ÀÌ ¼öÇàµÇ¾î Áø´Ù.
-*		   1. ½ÇÁ¦·Î ÇØ´ç ¾î¼Àºí¸® ¸í·É¾î¸¦ ±â°è¾î·Î ¹Ù²Ù´Â ÀÛ¾÷À» ¼öÇàÇÑ´Ù.
-* ¸Å°è : ¾øÀ½
-* ¹İÈ¯ : Á¤»óÁ¾·á = 0, ¿¡·¯¹ß»ı = < 0
-* ÁÖÀÇ :
+* ì„¤ëª… : ì–´ì…ˆë¸”ë¦¬ ì½”ë“œë¥¼ ê¸°ê³„ì–´ ì½”ë“œë¡œ ë°”ê¾¸ê¸° ìœ„í•œ íŒ¨ìŠ¤2 ê³¼ì •ì„ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+*		   íŒ¨ìŠ¤ 2ì—ì„œëŠ” í”„ë¡œê·¸ë¨ì„ ê¸°ê³„ì–´ë¡œ ë°”ê¾¸ëŠ” ì‘ì—…ì€ ë¼ì¸ ë‹¨ìœ„ë¡œ ìˆ˜í–‰ëœë‹¤.
+*		   ë‹¤ìŒê³¼ ê°™ì€ ì‘ì—…ì´ ìˆ˜í–‰ë˜ì–´ ì§„ë‹¤.
+*		   1. ì‹¤ì œë¡œ í•´ë‹¹ ì–´ì…ˆë¸”ë¦¬ ëª…ë ¹ì–´ë¥¼ ê¸°ê³„ì–´ë¡œ ë°”ê¾¸ëŠ” ì‘ì—…ì„ ìˆ˜í–‰í•œë‹¤.
+* ë§¤ê³„ : ì—†ìŒ
+* ë°˜í™˜ : ì •ìƒì¢…ë£Œ = 0, ì—ëŸ¬ë°œìƒ = < 0
+* ì£¼ì˜ :
 * -----------------------------------------------------------------------------------
 */
 static int assem_pass2(void)
 {
+	locctr = 0;
+	int num = 0;
+	while (num < line_num)
+	{
+		if (token_table[num]->index_num >= 0)
+		{
+			if (inst_table[token_table[num]->index_num]->format1 == 1)			
+			{																								// 1í˜•ì‹ 
+				object_table[num]->length = 1;
+				object_table[num]->code = calloc(1, sizeof(unsigned char));
+				strcpy(object_table[num]->code, inst_table[token_table[num]->index_num]->op);
+			}
+			else if (inst_table[token_table[num]->index_num]->format1 == 2)
+			{																								// 2í˜•ì‹
 
-	/* add your code here */
+			}
+			else if (inst_table[token_table[num]->index_num]->format1 == 3 && strncmp(token_table[num]->operator, "+", 1) != 0)
+			{																								// 3í˜•ì‹
+
+			}
+			else if (inst_table[token_table[num]->index_num]->format1 == 3 && strncmp(token_table[num]->operator, "+", 1) == 0)
+			{																								// 4í˜•ì‹
+
+			}
+		}
+		else
+		{
+		}
+	}
+
+	return locctr;
 }
 
 /* ----------------------------------------------------------------------------------
-* ¼³¸í : ÀÔ·ÂµÈ ¹®ÀÚ¿­ÀÇ ÀÌ¸§À» °¡Áø ÆÄÀÏ¿¡ ÇÁ·Î±×·¥ÀÇ °á°ú¸¦ ÀúÀåÇÏ´Â ÇÔ¼öÀÌ´Ù.
-*        ¿©±â¼­ Ãâ·ÂµÇ´Â ³»¿ëÀº object code (ÇÁ·ÎÁ§Æ® 1¹ø) ÀÌ´Ù.
-* ¸Å°è : »ı¼ºÇÒ ¿ÀºêÁ§Æ® ÆÄÀÏ¸í
-* ¹İÈ¯ : ¾øÀ½
-* ÁÖÀÇ : ¸¸¾à ÀÎÀÚ·Î NULL°ªÀÌ µé¾î¿Â´Ù¸é ÇÁ·Î±×·¥ÀÇ °á°ú¸¦ Ç¥ÁØÃâ·ÂÀ¸·Î º¸³»¾î
-*        È­¸é¿¡ Ãâ·ÂÇØÁØ´Ù.
+* ì„¤ëª… : ì…ë ¥ëœ ë¬¸ìì—´ì˜ ì´ë¦„ì„ ê°€ì§„ íŒŒì¼ì— í”„ë¡œê·¸ë¨ì˜ ê²°ê³¼ë¥¼ ì €ì¥í•˜ëŠ” í•¨ìˆ˜ì´ë‹¤.
+*        ì—¬ê¸°ì„œ ì¶œë ¥ë˜ëŠ” ë‚´ìš©ì€ object code (í”„ë¡œì íŠ¸ 1ë²ˆ) ì´ë‹¤.
+* ë§¤ê³„ : ìƒì„±í•  ì˜¤ë¸Œì íŠ¸ íŒŒì¼ëª…
+* ë°˜í™˜ : ì—†ìŒ
+* ì£¼ì˜ : ë§Œì•½ ì¸ìë¡œ NULLê°’ì´ ë“¤ì–´ì˜¨ë‹¤ë©´ í”„ë¡œê·¸ë¨ì˜ ê²°ê³¼ë¥¼ í‘œì¤€ì¶œë ¥ìœ¼ë¡œ ë³´ë‚´ì–´
+*        í™”ë©´ì— ì¶œë ¥í•´ì¤€ë‹¤.
 *
 * -----------------------------------------------------------------------------------
 */

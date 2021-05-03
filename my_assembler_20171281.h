@@ -1,6 +1,6 @@
 #pragma once
 /*
- * my_assembler ÇÔ¼ö¸¦ À§ÇÑ º¯¼ö ¼±¾ğ ¹× ¸ÅÅ©·Î¸¦ ´ã°í ÀÖ´Â Çì´õ ÆÄÀÏÀÌ´Ù.
+ * my_assembler í•¨ìˆ˜ë¥¼ ìœ„í•œ ë³€ìˆ˜ ì„ ì–¸ ë° ë§¤í¬ë¡œë¥¼ ë‹´ê³  ìˆëŠ” í—¤ë” íŒŒì¼ì´ë‹¤.
  *
  */
 #define MAX_INST 256
@@ -8,8 +8,8 @@
 #define MAX_OPERAND 3
 
  /*
-  * instruction ¸ñ·Ï ÆÄÀÏ·Î ºÎÅÍ Á¤º¸¸¦ ¹Ş¾Æ¿Í¼­ »ı¼ºÇÏ´Â ±¸Á¶Ã¼ º¯¼öÀÌ´Ù.
-  * ¶óÀÎ º°·Î ÇÏ³ªÀÇ instructionÀ» ÀúÀåÇÑ´Ù.
+  * instruction ëª©ë¡ íŒŒì¼ë¡œ ë¶€í„° ì •ë³´ë¥¼ ë°›ì•„ì™€ì„œ ìƒì„±í•˜ëŠ” êµ¬ì¡°ì²´ ë³€ìˆ˜ì´ë‹¤.
+  * ë¼ì¸ ë³„ë¡œ í•˜ë‚˜ì˜ instructionì„ ì €ì¥í•œë‹¤.
   */
 struct inst_unit
 {
@@ -24,14 +24,14 @@ inst* inst_table[MAX_INST];
 int inst_index;
 
 /*
- * ¾î¼Àºí¸® ÇÒ ¼Ò½ºÄÚµå¸¦ ÀÔ·Â¹Ş´Â Å×ÀÌºíÀÌ´Ù. ¶óÀÎ ´ÜÀ§·Î °ü¸®ÇÒ ¼ö ÀÖ´Ù.
+ * ì–´ì…ˆë¸”ë¦¬ í•  ì†ŒìŠ¤ì½”ë“œë¥¼ ì…ë ¥ë°›ëŠ” í…Œì´ë¸”ì´ë‹¤. ë¼ì¸ ë‹¨ìœ„ë¡œ ê´€ë¦¬í•  ìˆ˜ ìˆë‹¤.
  */
 char* input_data[MAX_LINES];
 static int line_num;
 
 /*
- * ¾î¼Àºí¸® ÇÒ ¼Ò½ºÄÚµå¸¦ ÅäÅ«´ÜÀ§·Î °ü¸®ÇÏ±â À§ÇÑ ±¸Á¶Ã¼ º¯¼öÀÌ´Ù.
- * operator´Â renamingÀ» Çã¿ëÇÑ´Ù.
+ * ì–´ì…ˆë¸”ë¦¬ í•  ì†ŒìŠ¤ì½”ë“œë¥¼ í† í°ë‹¨ìœ„ë¡œ ê´€ë¦¬í•˜ê¸° ìœ„í•œ êµ¬ì¡°ì²´ ë³€ìˆ˜ì´ë‹¤.
+ * operatorëŠ” renamingì„ í—ˆìš©í•œë‹¤.
  */
 struct token_unit
 {
@@ -40,17 +40,18 @@ struct token_unit
 	char operand[MAX_OPERAND][20];
 	char comment[100];
 	char nixbpe;
+	int addr;
+	int index_num;
 };
 
 typedef struct token_unit token;
 token* token_table[MAX_LINES];
 static int token_line;
 
-static int opcode[MAX_LINES] = {0};
 
 /*
- * ½Éº¼À» °ü¸®ÇÏ´Â ±¸Á¶Ã¼ÀÌ´Ù.
- * ½Éº¼ Å×ÀÌºíÀº ½Éº¼ ÀÌ¸§, ½Éº¼ÀÇ À§Ä¡·Î ±¸¼ºµÈ´Ù.
+ * ì‹¬ë³¼ì„ ê´€ë¦¬í•˜ëŠ” êµ¬ì¡°ì²´ì´ë‹¤.
+ * ì‹¬ë³¼ í…Œì´ë¸”ì€ ì‹¬ë³¼ ì´ë¦„, ì‹¬ë³¼ì˜ ìœ„ì¹˜ë¡œ êµ¬ì„±ëœë‹¤.
  */
 struct symbol_unit
 {
@@ -59,20 +60,30 @@ struct symbol_unit
 };
 
 /*
-* ¸®ÅÍ·²À» °ü¸®ÇÏ´Â ±¸Á¶Ã¼ÀÌ´Ù.
-* ¸®ÅÍ·² Å×ÀÌºíÀº ¸®ÅÍ·²ÀÇ ÀÌ¸§, ¸®ÅÍ·²ÀÇ À§Ä¡·Î ±¸¼ºµÈ´Ù.
+* ë¦¬í„°ëŸ´ì„ ê´€ë¦¬í•˜ëŠ” êµ¬ì¡°ì²´ì´ë‹¤.
+* ë¦¬í„°ëŸ´ í…Œì´ë¸”ì€ ë¦¬í„°ëŸ´ì˜ ì´ë¦„, ë¦¬í„°ëŸ´ì˜ ìœ„ì¹˜ë¡œ êµ¬ì„±ëœë‹¤.
 */
 struct literal_unit
 {
 	char* literal;
 	int addr;
+	int length;
+};
+
+struct object_unit
+{
+	int length;
+	char* code;
 };
 
 typedef struct symbol_unit symbol;
-symbol sym_table[MAX_LINES];
+symbol* sym_table[MAX_LINES];
 
 typedef struct literal_unit literal;
-literal literal_table[MAX_LINES];
+literal* literal_table[MAX_LINES];
+
+typedef struct object_unit object;
+object* object_table[MAX_LINES];
 
 static int locctr;
 //--------------
