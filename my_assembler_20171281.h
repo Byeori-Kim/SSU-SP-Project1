@@ -42,6 +42,7 @@ struct token_unit
 	char nixbpe;
 	int addr;
 	int index_num;
+	int csect;
 };
 
 typedef struct token_unit token;
@@ -57,6 +58,7 @@ struct symbol_unit
 {
 	char symbol[10];
 	int addr;
+	int csect;
 };
 
 /*
@@ -73,7 +75,12 @@ struct literal_unit
 struct object_unit
 {
 	int length;
-	char* code;
+	unsigned char* code;
+};
+struct modify_unit
+{
+	char* symbol[2];
+	int addr[2];
 };
 
 typedef struct symbol_unit symbol;
@@ -85,7 +92,12 @@ literal* literal_table[MAX_LINES];
 typedef struct object_unit object;
 object* object_table[MAX_LINES];
 
+typedef struct modify_unit modify;
+modify* modify_table[MAX_LINES];
+
 static int locctr;
+
+static int endaddr[3];
 //--------------
 
 static char* input_file;

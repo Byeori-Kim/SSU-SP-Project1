@@ -51,13 +51,13 @@ int main(int args, char* arg[])
 	//make_symtab_output(NULL);
 	//make_literaltab_output(NULL);
 	make_literaltab_output("C:\\SP_Parser\\SP\\literaltab_20171281.txt");														// literaltable 출력
-	//if (assem_pass2() < 0)
-	//{
-	//	printf(" assem_pass2: 패스2 과정에서 실패하였습니다.  \n");
-	//	return -1;
-	//}
+	if (assem_pass2() < 0)
+	{
+		printf(" assem_pass2: 패스2 과정에서 실패하였습니다.  \n");
+		return -1;
+	}
 
-	//make_objectcode_output("C:\\SP_Parser\\SP\\output_20171281.txt");															// 최종결과 출력
+	make_objectcode_output("C:\\SP_Parser\\SP\\output_20171281.txt");															// 최종결과 출력
 	
 	return 0;
 }
@@ -131,7 +131,16 @@ int init_inst_file(char* inst_file)
 			in.format2 = *token - 48;																		// format2 저장, format이 한 개면 0 저장
 			token = strtok(NULL, " ");
 
-			in.op = ((token[2]-48)<<4) + (token[3]-48);														// opcode 저장
+																											// opcode 저장
+			if(token[2] == 'A' || token[2] == 'B' || token[2] == 'C' || token[2] == 'D' || token[2] == 'E' || token[2] == 'F')
+				in.op = (token[2] - 55) << 4;
+			else if (token[2] > 47 && token[2] < 58)
+				in.op = (token[2] - 48) << 4;
+
+			if (token[3] == 'A' || token[3] == 'B' || token[3] == 'C' || token[3] == 'D' || token[3] == 'E' || token[3] == 'F')
+				in.op += (token[3] - 55);
+			else if (token[3] > 47 && token[3] < 58)
+				in.op += (token[3] - 48);
 			token = strtok(NULL, " ");
 
 			in.ops = *token - 48;																			// operands 개수 저장
@@ -501,6 +510,7 @@ static int assem_pass1(void)
 	int num = 0;																							// input_data와 token_table을 위한 인덱스용 변수 선언
 	token_line = 0;
 	int a = 0;																								// 주소값 저장을 위한 변수 선언
+	int check = 0;
 	while (num<line_num) {
 		sym_table[num] = (symbol*)calloc(1, sizeof(symbol));
 		literal_table[num] = (literal*)calloc(1, sizeof(literal));
@@ -519,8 +529,10 @@ static int assem_pass1(void)
 
 		else if (strcmp(token_table[num]->operator, "CSECT") == 0)											// operator가 CSECT인 경우
 		{
+			endaddr[check] = a;
 			a = 0;
 			token_table[num]->addr = a;
+			check++;
 		}
 		else if (strcmp(token_table[num]->operator, "RESW") == 0)											// operator가 RESW인 경우
 		{
@@ -538,10 +550,7 @@ static int assem_pass1(void)
 			{
 				token_table[num]->addr = a;
 			}
-			else
-			{
-																											// operand가 있는 경우
-			}
+			else																							// operand가 있는 경우
 			{
 				char* ch = calloc(20, sizeof(char));
 				char* temp;
@@ -557,7 +566,7 @@ static int assem_pass1(void)
 				temp = strtok(NULL, "-");
 				for (int i = 0; i < num; i++)
 				{
-					if (strcmp(temp, sym_table[i]->symbol) == 0)
+					if (sym_table[i]->symbol[0] != 0 && strcmp(temp, sym_table[i]->symbol) == 0)
 						n2 = sym_table[i]->addr;
 				}
 				token_table[num]->addr = n1 - n2;
@@ -645,13 +654,13 @@ static int assem_pass1(void)
 				}
 				if (hex == 0 && check == 0)
 				{
-					literal_table[num]->literal = calloc(10, sizeof(char));
+					literal_table[num]->literal = (char *)calloc(10, sizeof(char));
 					strcpy(literal_table[num]->literal, temp);
 					literal_table[num]->length = strlen(temp);
 				}
 				else if (hex == 1 && check == 0)
 				{
-					literal_table[num]->literal = calloc(10, sizeof(char));
+					literal_table[num]->literal = (char*)calloc(10, sizeof(char));
 					strcpy(literal_table[num]->literal, temp);
 					literal_table[num]->length = 1;
 				}
@@ -659,10 +668,12 @@ static int assem_pass1(void)
 
 			}
 		}
+		token_table[num]->csect = check;
 		if (token_table[num]->label !=NULL)																	// symbol table 만들기
 		{
 			strcpy(sym_table[num]->symbol, token_table[num]->label);
 			sym_table[num]->addr = token_table[num]->addr;
+			sym_table[num]->csect = token_table[num]->csect;
 		}
 		num++;
 	}
@@ -691,7 +702,7 @@ void make_symtab_output(char* file_name)
 		while (num<line_num) 
 		{
 			if (sym_table[num]->symbol[0] != 0)
-				printf("%s			%x\n", sym_table[num]->symbol, sym_table[num]->addr);
+				printf("%s\t\t\t%x\n", sym_table[num]->symbol, sym_table[num]->addr);
 			num++;
 		}
 		printf("\n");
@@ -701,7 +712,7 @@ void make_symtab_output(char* file_name)
 		while (num<line_num) 
 		{
 			if (sym_table[num]->symbol[0] != 0)
-				fprintf(file, "%s			%x\n", sym_table[num]->symbol, sym_table[num]->addr);
+				fprintf(file, "%s\t\t\t%x\n", sym_table[num]->symbol, sym_table[num]->addr);
 			num++;
 		}
 		fflush(file);
@@ -763,30 +774,275 @@ static int assem_pass2(void)
 	int num = 0;
 	while (num < line_num)
 	{
+		object_table[num] = (object*)calloc(1, sizeof(object));
+		modify_table[num] = (modify*)calloc(1, sizeof(modify));
+		modify_table[num]->symbol[0] = NULL;
+		modify_table[num]->symbol[1] = NULL;
 		if (token_table[num]->index_num >= 0)
 		{
 			if (inst_table[token_table[num]->index_num]->format1 == 1)			
 			{																								// 1형식 
 				object_table[num]->length = 1;
-				object_table[num]->code = calloc(1, sizeof(unsigned char));
-				strcpy(object_table[num]->code, inst_table[token_table[num]->index_num]->op);
+				object_table[num]->code = calloc(object_table[num]->length, sizeof(unsigned char));
+				object_table[num]->code[0] = inst_table[token_table[num]->index_num]->op;
 			}
 			else if (inst_table[token_table[num]->index_num]->format1 == 2)
 			{																								// 2형식
+				object_table[num]->length = 2;
+				object_table[num]->code = calloc(object_table[num]->length, sizeof(unsigned char));
+				object_table[num]->code[0] = inst_table[token_table[num]->index_num]->op;
+				if (token_table[num]->operand[0][0] != 0)
+				{
+					if (strcmp(token_table[num]->operand[0], "A") == 0) object_table[num]->code[1] += 0 << 4;
+					else if (strcmp(token_table[num]->operand[0], "X") == 0) object_table[num]->code[1] += 1 << 4;
+					else if (strcmp(token_table[num]->operand[0], "L") == 0) object_table[num]->code[1] += 2 << 4;
+					else if (strcmp(token_table[num]->operand[0], "B") == 0) object_table[num]->code[1] += 3 << 4;
+					else if (strcmp(token_table[num]->operand[0], "S") == 0) object_table[num]->code[1] += 4 << 4;
+					else if (strcmp(token_table[num]->operand[0], "T") == 0) object_table[num]->code[1] += 5 << 4;
+					else if (strcmp(token_table[num]->operand[0], "F") == 0) object_table[num]->code[1] += 6 << 4;
+					else if (strcmp(token_table[num]->operand[0], "PC") == 0) object_table[num]->code[1] += 8 << 4;
+					else if (strcmp(token_table[num]->operand[0], "SW") == 0) object_table[num]->code[1] += 9 << 4;
+					else if (strncmp(token_table[num]->operand[0], "#", 1) == 0)
+					{
+						char* temp;
+						temp = token_table[num]->operand[0];
+						temp = strtok(temp, "#");
+						object_table[num]->code[1] += atoi(temp);
+					}
+				}
+				if (token_table[num]->operand[1][0] != 0)
+				{
+					if (strcmp(token_table[num]->operand[1], "A") == 0) object_table[num]->code[1] += 0;
+					else if (strcmp(token_table[num]->operand[1], "X") == 0) object_table[num]->code[1] += 1;
+					else if (strcmp(token_table[num]->operand[1], "L") == 0) object_table[num]->code[1] += 2;
+					else if (strcmp(token_table[num]->operand[1], "B") == 0) object_table[num]->code[1] += 3;
+					else if (strcmp(token_table[num]->operand[1], "S") == 0) object_table[num]->code[1] += 4;
+					else if (strcmp(token_table[num]->operand[1], "T") == 0) object_table[num]->code[1] += 5;
+					else if (strcmp(token_table[num]->operand[1], "F") == 0) object_table[num]->code[1] += 6;
+					else if (strcmp(token_table[num]->operand[1], "PC") == 0) object_table[num]->code[1] += 8;
+					else if (strcmp(token_table[num]->operand[1], "SW") == 0) object_table[num]->code[1] += 9;
+				}
 
 			}
 			else if (inst_table[token_table[num]->index_num]->format1 == 3 && strncmp(token_table[num]->operator, "+", 1) != 0)
 			{																								// 3형식
+				object_table[num]->length = 3;
+				object_table[num]->code = (unsigned char*)calloc(object_table[num]->length, sizeof(unsigned char));
+				object_table[num]->code[0] = inst_table[token_table[num]->index_num]->op;
+				if (strcmp(token_table[num]->operator, "RSUB") == 0)
+				{
+					token_table[num]->nixbpe = 0b00110000;
+					object_table[num]->code[0] += token_table[num]->nixbpe >> 4;
+				}
 
+				else if (token_table[num]->operand[0][0] == '#')											// nixbpe = 010000, immediate
+				{
+					token_table[num]->nixbpe = 0b00010000;
+					object_table[num]->code[0] += token_table[num]->nixbpe / 0x10;
+					object_table[num]->code[1] += (token_table[num]->nixbpe % 0x10) * 0x10;
+					char* temp;
+					temp = token_table[num]->operand[0];
+					temp = strtok(temp, "#");
+					object_table[num]->code[1] += atoi(temp) / 0x100;
+					object_table[num]->code[2] += atoi(temp) % 0x100;
+
+				}
+				else if (token_table[num]->operand[0][0] == '@')											// nixbpe = 100010, indirect
+				{
+					token_table[num]->nixbpe = 0b00100010;
+					object_table[num]->code[0] += token_table[num]->nixbpe >> 4;
+					object_table[num]->code[1] += token_table[num]->nixbpe << 4;
+					char* temp = token_table[num]->operand[0];
+					temp = strtok(temp, "@");
+					for (int i = 0; i < token_line; i++)
+					{
+
+						if (!strcmp(sym_table[i]->symbol, temp) && sym_table[i]->csect == token_table[num]->csect)
+						{
+							unsigned int addr = sym_table[i]->addr - token_table[num + 1]->addr;
+							object_table[num]->code[1] += addr >> 0x8 & 0xF;
+							object_table[num]->code[2] += addr & 0xFF;
+							break;
+						}
+						else if (!strcmp(sym_table[i]->symbol, temp) 
+							&& sym_table[i]->csect != token_table[num]->csect)
+						{
+							modify_table[num]->symbol[0] = calloc(10, sizeof(char));
+							strcpy(modify_table[num]->symbol[0], sym_table[i]->symbol);
+							modify_table[num]->addr[0] = token_table[num]->addr;
+							break;
+						}
+					}
+				}
+				else																						// ni = 11, simple
+				{
+					if (strcmp(token_table[num]->operand[1], "X") == 0) 
+						token_table[num]->nixbpe += 0b00001000;												// x = 1
+					token_table[num]->nixbpe += 0b00110010;													// ni = 11, p = 1
+					object_table[num]->code[0] += token_table[num]->nixbpe >> 4;
+					object_table[num]->code[1] += token_table[num]->nixbpe << 4;
+					for (int i = 0; i < line_num; i++)
+					{
+						if (!strcmp(sym_table[i]->symbol, token_table[num]->operand[0])
+							&& sym_table[i]->csect == token_table[num]->csect)
+						{
+							unsigned int addr = sym_table[i]->addr - token_table[num + 1]->addr;
+							object_table[num]->code[1] += addr >> 0x8 & 0xF;
+							object_table[num]->code[2] += addr & 0xFF;
+							break;
+						}
+						else if (!strcmp(sym_table[i]->symbol, token_table[num]->operand[0])
+							&& sym_table[i]->csect != token_table[num]->csect)
+						{
+							modify_table[num]->symbol[0] = calloc(10, sizeof(char));
+							strcpy(modify_table[num]->symbol[0], sym_table[i]->symbol);
+							modify_table[num]->addr[0] = token_table[num]->addr;
+							break;
+						}
+						else if (token_table[num]->operand[0][0] == '=')
+						{
+							char* temp = calloc(10, sizeof(char));
+							strcpy(temp, token_table[num]->operand[0]);
+							temp = strtok(temp, "'");
+							temp = strtok(NULL, "'");
+							
+							if ((literal_table[i]->literal) != NULL && !strcmp(literal_table[i]->literal, temp))
+							{
+								unsigned int addr = literal_table[i]->addr - token_table[num + 1]->addr;
+								object_table[num]->code[1] += addr >> 0x8 & 0xF;
+								object_table[num]->code[2] += addr & 0xFF;
+								break;
+							}
+						}
+					}
+
+				}
 			}
 			else if (inst_table[token_table[num]->index_num]->format1 == 3 && strncmp(token_table[num]->operator, "+", 1) == 0)
 			{																								// 4형식
+				object_table[num]->length = 4;
+				object_table[num]->code = calloc(object_table[num]->length, sizeof(unsigned char));
+				object_table[num]->code[0] = inst_table[token_table[num]->index_num]->op;
+				token_table[num]->nixbpe = 0b00110001;
+				if (strcmp(token_table[num]->operand[1], "X") == 0)
+					token_table[num]->nixbpe += 0b00001000;												// x = 1
+				object_table[num]->code[0] += token_table[num]->nixbpe >> 4;
+				object_table[num]->code[1] += token_table[num]->nixbpe << 4;
+				for (int i = 0; i < line_num; i++)
+				{
+					if (!strcmp(sym_table[i]->symbol, token_table[num]->operand[0])
+						&& sym_table[i]->csect == token_table[num]->csect)
+					{
+						unsigned int addr = sym_table[i]->addr - token_table[num + 1]->addr;
+						object_table[num]->code[1] += addr >> 0x8 & 0xF;
+						object_table[num]->code[2] += (addr & 0xFF00) >> 8;
+						object_table[num]->code[3] += addr & 0xFF;
+						break;
+					}
+					else if (!strcmp(sym_table[i]->symbol, token_table[num]->operand[0])
+						&& sym_table[i]->csect != token_table[num]->csect)
+					{
+						modify_table[num]->symbol[0] = calloc(10, sizeof(char));
+						strcpy(modify_table[num]->symbol[0], sym_table[i]->symbol);
+						modify_table[num]->addr[0] = token_table[num]->addr;
+						break;
+					}
+					else if (strncmp(token_table[num]->operand[0], "=", 1) == 0)
+					{
+						char* temp;
+						temp = token_table[num]->operand[0];
+						temp = strtok(temp, "'");
+						for (int j = 0; j < line_num; j++)
+						{
+							if (strcmp(literal_table[j]->literal, temp) == 0)
+							{
+								unsigned int addr = literal_table[i]->addr - token_table[num + 1]->addr;
+								object_table[num]->code[1] += addr >> 0x8 & 0xF;
+								object_table[num]->code[2] += (addr & 0xFF00) >> 8;
+								object_table[num]->code[3] += addr & 0xFF;
+								break;
+							}
+
+						}
+					}
+				}
 
 			}
 		}
 		else
 		{
+			if (!strcmp(token_table[num]->operator, "BYTE"))
+			{
+				char* temp = calloc(10, sizeof(char));
+				strcpy(temp, token_table[num]->operand[0]);
+				temp = strtok(temp, "'");
+				temp = strtok(NULL, "'");
+				object_table[num]->length = 1;
+				object_table[num]->code = calloc(object_table[num]->length, sizeof(unsigned char));
+				if (temp[0] == 'A' || temp[0] == 'B' || temp[0] == 'C' || temp[0] == 'D' || temp[0] == 'E' || temp[0] == 'F')
+					object_table[num]->code[0] = (temp[0] - 55) << 4;
+				else if (temp[0] > 47 && temp[0] < 58)
+					object_table[num]->code[0] = (temp[0] - 48) << 4;
+
+				if (temp[1] == 'A' || temp[1] == 'B' || temp[1] == 'C' || temp[1] == 'D' || temp[1] == 'E' || temp[1] == 'F')
+					object_table[num]->code[0] = (temp[0] - 55) << 4;
+				else if (temp[1] > 47 && temp[1] < 58)
+					object_table[num]->code[0] = (temp[1] - 48) << 4;
+			}
+			else if (!strcmp(token_table[num]->operator, "WORD"))
+			{
+				char* temp = calloc(10, sizeof(char));
+				object_table[num]->length = 3;
+				object_table[num]->code = calloc(object_table[num]->length, sizeof(unsigned char));
+				strcpy(temp, token_table[num]->operand[0]);
+				temp = strtok(temp, "-");
+				unsigned int addr = 0;
+				for (int i = 0; i < line_num; i++)
+				{
+					if (!strcmp(sym_table[i]->symbol, temp)
+						&& sym_table[i]->csect == token_table[num]->csect)
+					{
+						addr = sym_table[i];
+						break;
+					}
+					else if (!strcmp(sym_table[i]->symbol, temp)
+						&& sym_table[i]->csect != token_table[num]->csect)
+					{
+						modify_table[num]->symbol[0] = calloc(10, sizeof(char));
+						strcpy(modify_table[num]->symbol[0], sym_table[i]->symbol);
+						modify_table[num]->addr[0] = token_table[num]->addr;
+						break;
+					}
+				}
+				temp = strtok(NULL, "-");
+				for (int i = 0; i < line_num; i++)
+				{
+					if (!strcmp(sym_table[i]->symbol, temp)
+						&& sym_table[i]->csect == token_table[num]->csect)
+					{
+						addr -= sym_table[i]->addr;
+						object_table[num]->code[0] += (addr & 0xff0000) >> 0x10;
+						object_table[num]->code[1] += (addr & 0xFF00) >> 8;
+						object_table[num]->code[2] += addr & 0xFF;
+						break;
+					}
+					else if (!strcmp(sym_table[i]->symbol, temp)
+						&& sym_table[i]->csect != token_table[num]->csect)
+					{
+						modify_table[num]->symbol[1] = calloc(10, sizeof(char));
+						strcpy(modify_table[num]->symbol[1], sym_table[i]->symbol);
+						modify_table[num]->addr[1] = token_table[num]->addr;
+						break;
+					}
+				}
+			}
 		}
+		printf("%d: ", num);
+		for (int loop = 0; loop < object_table[num]->length; loop++) {
+			printf("%02x", object_table[num]->code[loop]);
+		}
+		printf("\n");
+		num++;
 	}
 
 	return locctr;
@@ -804,5 +1060,117 @@ static int assem_pass2(void)
 */
 void make_objectcode_output(char* file_name)
 {
-	/* add your code here */
+	FILE* file;
+	file = fopen(file_name, "w");
+	int num = 0;
+	int csect = 0;
+	int mcheck = 0;
+	int tcheck = 0;
+	char H[3][20] = { 0 };																			// H 줄 저장할 문자열 정의
+	char D[70] = { 0 };																				// D 줄 저장할 문자열 정의
+	char R[3][70] = { 0 };																			// R 줄 저장할 문자열 정의
+	char T[3][5][70] = { 0 };																		// T 줄 저장할 문자열 정의
+	char M[3][4][16] = { 0 };																		// M 줄 저장할 문자열 정의
+	char E[3][7] = { 0 };																			// E 줄 저장할 문자열 정의
+	while (csect < 3)
+	{
+		// H줄
+		
+		if (!strcmp(token_table[num]->operator, "START") || !strcmp(token_table[num]->operator, "CSECT"))
+		{
+			char start[6] = { 0 };
+			int start_addr = 0;
+			int end_addr = 0;
+			strcpy(start, token_table[num]->label);
+			start_addr = token_table[num]->addr;
+			end_addr = endaddr[csect];
+			sprintf(H[csect], "H%-6s%06X%06X\n", token_table[num]->label, start_addr, end_addr);
+			csect = token_table[num]->csect;
+			continue;
+		}
+
+		//D줄
+		if (!strcmp(token_table[num]->operator, "EXTDEF"))
+		{
+			int i = 0;
+			sprintf(D[csect], "D");
+			while(i<3 || token_table[num]->operand[i][0] != 0)
+			{
+				for (int j = 0; j < line_num; j++)
+				{
+					if (!strcmp(token_table[num]->operand[i], sym_table[j]->symbol))
+					{
+						sprintf(D[csect] + strlen(D[csect]), "%s%06X", sym_table[j]->symbol, sym_table[j]->addr);
+					}
+				}
+				i++;
+			}
+			sprintf(D[csect] + strlen(D[csect]), "\n");
+			continue;
+		}
+
+		//R줄
+		if (!strcmp(token_table[num]->operator, "EXTREF"))
+		{
+			int i = 0;
+			sprintf(R[csect], "R");
+			while (i < 3 || token_table[num]->operand[i][0] != 0)
+			{
+				for (int j = 0; j < line_num; j++)
+				{
+					if (!strcmp(token_table[num]->operand[i], sym_table[j]->symbol))
+					{
+						sprintf(R[csect] + strlen(R[csect]), "%-6s", sym_table[j]->symbol);
+					}
+				}
+				i++;
+			}
+			sprintf(R[csect] + strlen(R[csect]), "\n");
+			continue;
+		}
+
+		//T줄
+
+
+		//M줄
+		if (modify_table[num]->symbol[0] != NULL)
+		{
+			sprintf(M[csect][mcheck], "M");
+			if (modify_table[num]->symbol[1] != NULL)
+			{
+				sprintf(M[csect][mcheck] + strlen(M[csect][mcheck]), "%06X", modify_table[num]->addr[0]);
+				sprintf(M[csect][mcheck] + strlen(M[csect][mcheck]), "06+");
+				sprintf(M[csect][mcheck] + strlen(M[csect][mcheck]), "%s", modify_table[num]->symbol[0]);
+
+				mcheck++;
+				sprintf(M[csect][mcheck] + strlen(M[csect][mcheck]), "%06X", modify_table[num]->addr[1]);
+				sprintf(M[csect][mcheck] + strlen(M[csect][mcheck]), "06-");
+				sprintf(M[csect][mcheck] + strlen(M[csect][mcheck]), "%s", modify_table[num]->symbol[1]);
+
+			}
+			else
+			{
+				sprintf(M[csect][mcheck] + strlen(M[csect][mcheck]), "%06X", modify_table[num]->addr[0]);
+				if(!strncmp(token_table[num]->operator, "+", 1))
+					sprintf(M[csect][mcheck] + strlen(M[csect][mcheck]), "05+");
+				else
+					sprintf(M[csect][mcheck] + strlen(M[csect][mcheck]), "03+");
+				sprintf(M[csect][mcheck] + strlen(M[csect][mcheck]), "%s", modify_table[num]->symbol[0]);
+			}
+			sprintf(M[csect][mcheck] + strlen(M[csect][mcheck]), "\n");
+			mcheck++;
+		}
+
+		//E줄 
+		if (csect == 0)
+		{
+			sprintf(E[csect], "E000000\n");
+		}
+		else
+		{
+			sprintf(E[csect], "E\n");
+		}
+		num++;
+	}
+
 }
