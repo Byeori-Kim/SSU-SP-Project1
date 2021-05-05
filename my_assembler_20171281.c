@@ -507,6 +507,7 @@ int search_opcode(char* str)
 */
 static int assem_pass1(void)
 {
+	locctr = 0;
 	int num = 0;																							// input_data와 token_table을 위한 인덱스용 변수 선언
 	token_line = 0;
 	int a = 0;																								// 주소값 저장을 위한 변수 선언
@@ -529,7 +530,7 @@ static int assem_pass1(void)
 
 		else if (strcmp(token_table[num]->operator, "CSECT") == 0)											// operator가 CSECT인 경우
 		{
-			endaddr[check] = a;
+			endaddr[check] = a;																				// 끝주소 저장
 			a = 0;
 			token_table[num]->addr = a;
 			check++;
@@ -581,24 +582,7 @@ static int assem_pass1(void)
 		else if (strcmp(token_table[num]->operator, "WORD") == 0)											// operator가 WORD인 경우
 		{
 			token_table[num]->addr = a;
-			char* ch = calloc(20, sizeof(char));
-			char* temp;
-			int n1 = 0;
-			int n2 = 0;
-			strcpy(ch, token_table[num]->operand[0]);
-			temp = strtok(ch, "-");
-			for (int i = 0; i < num; i++)
-			{
-				if (strcmp(temp, sym_table[i]->symbol) == 0)
-					n1 = sym_table[i]->addr;
-			}
-			temp = strtok(NULL, "-");
-			for (int i = 0; i < num; i++)
-			{
-				if (strcmp(temp, sym_table[i]->symbol) == 0)
-					n2 = sym_table[i]->addr;
-			}
-			a += n1 - n2;
+			a += 3;
 
 		}
 		else if (strcmp(token_table[num]->operator, "LTORG") == 0 || num == line_num-1)						// operator가 LTORG이거나 input이 끝나는 경우
@@ -668,6 +652,10 @@ static int assem_pass1(void)
 
 			}
 		}
+		if (num == line_num - 1)
+		{
+			endaddr[2] = a;
+		}
 		token_table[num]->csect = check;
 		if (token_table[num]->label !=NULL)																	// symbol table 만들기
 		{
@@ -678,7 +666,7 @@ static int assem_pass1(void)
 		num++;
 	}
 
-	return 0;
+	return locctr;
 
 }
 
@@ -864,14 +852,18 @@ static int assem_pass2(void)
 							object_table[num]->code[2] += addr & 0xFF;
 							break;
 						}
-						else if (!strcmp(sym_table[i]->symbol, temp) 
+					}
+					for (int i = 0; i < token_line; i++)
+					{
+						if (!strcmp(sym_table[i]->symbol, temp)
 							&& sym_table[i]->csect != token_table[num]->csect)
 						{
 							modify_table[num]->symbol[0] = calloc(10, sizeof(char));
 							strcpy(modify_table[num]->symbol[0], sym_table[i]->symbol);
-							modify_table[num]->addr[0] = token_table[num]->addr;
+							modify_table[num]->addr[0] = token_table[num]->addr + 1;
 							break;
 						}
+						
 					}
 				}
 				else																						// ni = 11, simple
@@ -891,15 +883,21 @@ static int assem_pass2(void)
 							object_table[num]->code[2] += addr & 0xFF;
 							break;
 						}
-						else if (!strcmp(sym_table[i]->symbol, token_table[num]->operand[0])
+					}
+					for (int i = 0; i < line_num; i++)
+					{
+						if (!strcmp(sym_table[i]->symbol, token_table[num]->operand[0])
 							&& sym_table[i]->csect != token_table[num]->csect)
 						{
 							modify_table[num]->symbol[0] = calloc(10, sizeof(char));
 							strcpy(modify_table[num]->symbol[0], sym_table[i]->symbol);
-							modify_table[num]->addr[0] = token_table[num]->addr;
+							modify_table[num]->addr[0] = token_table[num]->addr + 1;
 							break;
 						}
-						else if (token_table[num]->operand[0][0] == '=')
+					}
+					for (int i = 0; i < line_num; i++)
+					{
+						if (token_table[num]->operand[0][0] == '=')
 						{
 							char* temp = calloc(10, sizeof(char));
 							strcpy(temp, token_table[num]->operand[0]);
@@ -935,19 +933,24 @@ static int assem_pass2(void)
 					{
 						unsigned int addr = sym_table[i]->addr - token_table[num + 1]->addr;
 						object_table[num]->code[1] += addr >> 0x8 & 0xF;
-						object_table[num]->code[2] += (addr & 0xFF00) >> 8;
-						object_table[num]->code[3] += addr & 0xFF;
+						object_table[num]->code[2] += addr & 0xFF;
 						break;
 					}
-					else if (!strcmp(sym_table[i]->symbol, token_table[num]->operand[0])
+				}
+				for (int i = 0; i < line_num; i++)
+				{
+					if (!strcmp(sym_table[i]->symbol, token_table[num]->operand[0])
 						&& sym_table[i]->csect != token_table[num]->csect)
 					{
 						modify_table[num]->symbol[0] = calloc(10, sizeof(char));
 						strcpy(modify_table[num]->symbol[0], sym_table[i]->symbol);
-						modify_table[num]->addr[0] = token_table[num]->addr;
+						modify_table[num]->addr[0] = token_table[num]->addr + 1;
 						break;
 					}
-					else if (strncmp(token_table[num]->operand[0], "=", 1) == 0)
+				}
+				for (int i = 0; i < line_num; i++)
+				{
+					if (strncmp(token_table[num]->operand[0], "=", 1) == 0)
 					{
 						char* temp;
 						temp = token_table[num]->operand[0];
@@ -971,7 +974,7 @@ static int assem_pass2(void)
 		}
 		else
 		{
-			if (!strcmp(token_table[num]->operator, "BYTE"))
+			if (token_table[num]->operator != NULL && !strcmp(token_table[num]->operator, "BYTE"))
 			{
 				char* temp = calloc(10, sizeof(char));
 				strcpy(temp, token_table[num]->operand[0]);
@@ -987,9 +990,9 @@ static int assem_pass2(void)
 				if (temp[1] == 'A' || temp[1] == 'B' || temp[1] == 'C' || temp[1] == 'D' || temp[1] == 'E' || temp[1] == 'F')
 					object_table[num]->code[0] = (temp[0] - 55) << 4;
 				else if (temp[1] > 47 && temp[1] < 58)
-					object_table[num]->code[0] = (temp[1] - 48) << 4;
+					object_table[num]->code[0] += temp[1] - 48;
 			}
-			else if (!strcmp(token_table[num]->operator, "WORD"))
+			else if (token_table[num]->operator != NULL && !strcmp(token_table[num]->operator, "WORD"))
 			{
 				char* temp = calloc(10, sizeof(char));
 				object_table[num]->length = 3;
@@ -1037,11 +1040,6 @@ static int assem_pass2(void)
 				}
 			}
 		}
-		printf("%d: ", num);
-		for (int loop = 0; loop < object_table[num]->length; loop++) {
-			printf("%02x", object_table[num]->code[loop]);
-		}
-		printf("\n");
 		num++;
 	}
 
@@ -1062,115 +1060,463 @@ void make_objectcode_output(char* file_name)
 {
 	FILE* file;
 	file = fopen(file_name, "w");
-	int num = 0;
 	int csect = 0;
-	int mcheck = 0;
-	int tcheck = 0;
-	char H[3][20] = { 0 };																			// H 줄 저장할 문자열 정의
-	char D[70] = { 0 };																				// D 줄 저장할 문자열 정의
-	char R[3][70] = { 0 };																			// R 줄 저장할 문자열 정의
-	char T[3][5][70] = { 0 };																		// T 줄 저장할 문자열 정의
-	char M[3][4][16] = { 0 };																		// M 줄 저장할 문자열 정의
-	char E[3][7] = { 0 };																			// E 줄 저장할 문자열 정의
-	while (csect < 3)
+	int check = 0;
+	while (csect == 0)
 	{
 		// H줄
 		
-		if (!strcmp(token_table[num]->operator, "START") || !strcmp(token_table[num]->operator, "CSECT"))
+		for (int i = 0; i < line_num; i++)
 		{
-			char start[6] = { 0 };
-			int start_addr = 0;
-			int end_addr = 0;
-			strcpy(start, token_table[num]->label);
-			start_addr = token_table[num]->addr;
-			end_addr = endaddr[csect];
-			sprintf(H[csect], "H%-6s%06X%06X\n", token_table[num]->label, start_addr, end_addr);
-			csect = token_table[num]->csect;
-			continue;
+			if (token_table[i]->operator != NULL && !strcmp(token_table[i]->operator, "START"))
+			{
+				char start[6] = { 0 };
+				int start_addr = 0;
+				int end_addr = 0;
+				strcpy(start, "COPY");
+				start_addr = token_table[i]->addr;
+				end_addr = endaddr[csect];
+				fprintf(file, "H%-6s%06X%06X\n", start, start_addr, end_addr);
+				break;
+			}
 		}
 
 		//D줄
-		if (!strcmp(token_table[num]->operator, "EXTDEF"))
+		for (int i = 0; i < line_num; i++)
 		{
-			int i = 0;
-			sprintf(D[csect], "D");
-			while(i<3 || token_table[num]->operand[i][0] != 0)
+			if (token_table[i]->operator != NULL && !strcmp(token_table[i]->operator, "EXTDEF"))
 			{
-				for (int j = 0; j < line_num; j++)
+				fprintf(file, "D");
+				int j = 0;
+				while (j < 3 || token_table[i]->operand[j][0] != 0)
 				{
-					if (!strcmp(token_table[num]->operand[i], sym_table[j]->symbol))
+					for (int k = 0; k < line_num; k++)
 					{
-						sprintf(D[csect] + strlen(D[csect]), "%s%06X", sym_table[j]->symbol, sym_table[j]->addr);
+						if (!strcmp(token_table[i]->operand[j], sym_table[k]->symbol))
+						{
+							fprintf(file, "%s%06X", sym_table[k]->symbol, sym_table[k]->addr);
+							break;
+						}
 					}
+					j++;
 				}
-				i++;
+				fprintf(file, "\n");
+				break;
 			}
-			sprintf(D[csect] + strlen(D[csect]), "\n");
-			continue;
 		}
 
 		//R줄
-		if (!strcmp(token_table[num]->operator, "EXTREF"))
+		for (int i = 0; i < line_num; i++)
 		{
-			int i = 0;
-			sprintf(R[csect], "R");
-			while (i < 3 || token_table[num]->operand[i][0] != 0)
+			if (token_table[i]->operator != NULL && !strcmp(token_table[i]->operator, "EXTREF"))
 			{
-				for (int j = 0; j < line_num; j++)
+				int j = 0;
+				fprintf(file, "R");
+				while (j < 3 || token_table[i]->operand[j][0] != 0)
 				{
-					if (!strcmp(token_table[num]->operand[i], sym_table[j]->symbol))
+					for (int k = 0; k < line_num; k++)
 					{
-						sprintf(R[csect] + strlen(R[csect]), "%-6s", sym_table[j]->symbol);
+						if (!strcmp(token_table[i]->operand[j], sym_table[k]->symbol))
+						{
+							fprintf(file, "%-6s", sym_table[k]->symbol);
+							break;
+						}
 					}
+					j++;
 				}
-				i++;
+				fprintf(file, "\n");
+				break;
 			}
-			sprintf(R[csect] + strlen(R[csect]), "\n");
-			continue;
 		}
 
 		//T줄
+		int cnt = 0;			// 줄별 길이
+		int ocnt = 0;			// 줄별 시작 명령어 카운트
+		for (int i = 0; i < line_num; i++)
+		{
+			
+			if (cnt == 0 && object_table[i]->length != 0)
+			{
+				fprintf(file, "T");
+				ocnt = token_table[i]->addr;
+				fprintf(file, "%06X", ocnt);
+				cnt += object_table[i]->length;
+			}
+			else if (cnt != 0 && cnt < 52/2 && object_table[i]->length != 0)
+			{
+				cnt += object_table[i]->length;
+
+			}
+			else if (cnt >= 52/2 && object_table[i]->length != 0)
+			{
+				fprintf(file, "%02X", cnt);
+				for (int j = ocnt; j < i; j++)
+				{
+					
+					if(object_table[j]->length == 1)
+					{ 
+						fprintf(file, "%02X", object_table[j]->code[0]);
+					}
+					else if (object_table[j]->length == 2)
+					{ 
+						fprintf(file, "%02X%02X", object_table[j]->code[0], object_table[j]->code[1]);
+					}
+					else if (object_table[j]->length == 3)
+					{
+						fprintf(file, "%02X%02X%02X", object_table[j]->code[0], object_table[j]->code[1], object_table[j]->code[2]);
+
+					}
+					else if (object_table[j]->length == 4)
+					{
+						fprintf(file, "%02X%02X%02X%02X", object_table[j]->code[0], object_table[j]->code[1], object_table[j]->code[2], object_table[j]->code[3]);
+
+					}
+				}
+				cnt = 0;
+				fprintf(file, "\n");
+			}
+			
+		}
+
 
 
 		//M줄
-		if (modify_table[num]->symbol[0] != NULL)
+		for (int i = 0; i < line_num; i++)
 		{
-			sprintf(M[csect][mcheck], "M");
-			if (modify_table[num]->symbol[1] != NULL)
+			if (modify_table[i]->symbol[0] != NULL && token_table[i]->csect == csect)
 			{
-				sprintf(M[csect][mcheck] + strlen(M[csect][mcheck]), "%06X", modify_table[num]->addr[0]);
-				sprintf(M[csect][mcheck] + strlen(M[csect][mcheck]), "06+");
-				sprintf(M[csect][mcheck] + strlen(M[csect][mcheck]), "%s", modify_table[num]->symbol[0]);
+				fprintf(file, "M");
+				if (modify_table[i]->symbol[1] != NULL)
+				{
+					fprintf(file, "%06X", modify_table[i]->addr[0]);
+					fprintf(file, "06+");
+					fprintf(file, "%s\n", modify_table[i]->symbol[0]);
 
-				mcheck++;
-				sprintf(M[csect][mcheck] + strlen(M[csect][mcheck]), "%06X", modify_table[num]->addr[1]);
-				sprintf(M[csect][mcheck] + strlen(M[csect][mcheck]), "06-");
-				sprintf(M[csect][mcheck] + strlen(M[csect][mcheck]), "%s", modify_table[num]->symbol[1]);
-
-			}
-			else
-			{
-				sprintf(M[csect][mcheck] + strlen(M[csect][mcheck]), "%06X", modify_table[num]->addr[0]);
-				if(!strncmp(token_table[num]->operator, "+", 1))
-					sprintf(M[csect][mcheck] + strlen(M[csect][mcheck]), "05+");
+					fprintf(file, "M");
+					fprintf(file, "%06X", modify_table[i]->addr[1]);
+					fprintf(file, "06-");
+					fprintf(file, "%s\n", modify_table[i]->symbol[1]);
+				}
 				else
-					sprintf(M[csect][mcheck] + strlen(M[csect][mcheck]), "03+");
-				sprintf(M[csect][mcheck] + strlen(M[csect][mcheck]), "%s", modify_table[num]->symbol[0]);
+				{
+					fprintf(file, "%06X", modify_table[i]->addr[0]);
+					if (!strncmp(token_table[i]->operator, "+", 1))
+						fprintf(file, "05+");
+					else
+						fprintf(file, "03+");
+					fprintf(file, "%s\n", modify_table[i]->symbol[0]);
+				}
 			}
-			sprintf(M[csect][mcheck] + strlen(M[csect][mcheck]), "\n");
-			mcheck++;
 		}
 
 		//E줄 
-		if (csect == 0)
+		for (int i = 0; i < line_num; i++)
 		{
-			sprintf(E[csect], "E000000\n");
+			if (token_table[i]->addr == endaddr[csect])
+			{
+				fprintf(file, "E000000\n\n");
+				csect++;
+				check = i;
+				break;
+			}
+			
+			
 		}
-		else
-		{
-			sprintf(E[csect], "E\n");
-		}
-		num++;
 	}
+	while (csect == 1)
+	{
+		// H줄
 
+		for (int i = check; i < line_num; i++)
+		{
+			if (token_table[i]->operator != NULL && !strcmp(token_table[i]->operator, "CSECT"))
+			{
+				char start[6] = { 0 };
+				int start_addr = 0;
+				int end_addr = 0;
+				strcpy(start, "RDREC");
+				start_addr = token_table[i]->addr;
+				end_addr = endaddr[csect];
+				fprintf(file, "H%-6s%06X%06X\n", start, start_addr, end_addr);
+				break;
+			}
+		}
+
+		//R줄
+		for (int i = check; i < line_num; i++)
+		{
+			if (token_table[i]->operator != NULL && !strcmp(token_table[i]->operator, "EXTREF"))
+			{
+				int j = 0;
+				fprintf(file, "R");
+				while (j < 3 || token_table[i]->operand[j][0] != 0)
+				{
+					for (int k = 0; k < line_num; k++)
+					{
+						if (!strcmp(token_table[i]->operand[j], sym_table[k]->symbol))
+						{
+							fprintf(file, "%-6s", sym_table[k]->symbol);
+							break;
+						}
+					}
+					j++;
+				}
+				fprintf(file, "\n");
+				break;
+			}
+		}
+
+		//T줄
+		int cnt = 0;			// 줄별 길이
+		int ocnt = 0;			// 줄별 시작 명령어 카운트
+		for (int i = check; i < line_num; i++)
+		{
+
+			if (cnt == 0 && object_table[i]->length != 0)
+			{
+				fprintf(file, "T");
+				ocnt = token_table[i]->addr;
+				fprintf(file, "%06X", ocnt);
+				cnt += object_table[i]->length;
+			}
+			else if (cnt != 0 && cnt < 52 / 2 && object_table[i]->length != 0)
+			{
+				cnt += object_table[i]->length;
+
+			}
+			else if (cnt >= 52 / 2 && object_table[i]->length != 0)
+			{
+				fprintf(file, "%02X", cnt);
+				for (int j = ocnt; j < i; j++)
+				{
+
+					if (object_table[j]->length == 1)
+					{
+						fprintf(file, "%02X", object_table[j]->code[0]);
+					}
+					else if (object_table[j]->length == 2)
+					{
+						fprintf(file, "%02X%02X", object_table[j]->code[0], object_table[j]->code[1]);
+					}
+					else if (object_table[j]->length == 3)
+					{
+						fprintf(file, "%02X%02X%02X", object_table[j]->code[0], object_table[j]->code[1], object_table[j]->code[2]);
+
+					}
+					else if (object_table[j]->length == 4)
+					{
+						fprintf(file, "%02X%02X%02X%02X", object_table[j]->code[0], object_table[j]->code[1], object_table[j]->code[2], object_table[j]->code[3]);
+
+					}
+				}
+				cnt = 0;
+				fprintf(file, "\n");
+			}
+
+		}
+		//M줄
+		for (int i = check; i < line_num; i++)
+		{
+			if (modify_table[i]->symbol[0] != NULL && token_table[i]->csect == csect)
+			{
+				fprintf(file, "M");
+				if (modify_table[i]->symbol[1] != NULL)
+				{
+					fprintf(file, "%06X", modify_table[i]->addr[0]);
+					fprintf(file, "06+");
+					fprintf(file, "%s\n", modify_table[i]->symbol[0]);
+
+					fprintf(file, "M");
+					fprintf(file, "%06X", modify_table[i]->addr[1]);
+					fprintf(file, "06-");
+					fprintf(file, "%s\n", modify_table[i]->symbol[1]);
+				}
+				else
+				{
+					fprintf(file, "%06X", modify_table[i]->addr[0]);
+					if (!strncmp(token_table[i]->operator, "+", 1))
+						fprintf(file, "05+");
+					else
+						fprintf(file, "03+");
+					fprintf(file, "%s\n", modify_table[i]->symbol[0]);
+				}
+			}
+		}
+
+		//E줄 
+		for (int i = check; i < line_num; i++)
+		{
+			if (token_table[i]->operator != NULL && !strcmp(token_table[i]->operator, "WORD"))
+			{
+				fprintf(file, "E\n\n");
+				csect++;
+				check = i;
+				break;
+			}
+		}
+	}
+		while (csect == 2)
+		{
+			// H줄
+
+			for (int i = check; i < line_num; i++)
+			{
+				if (token_table[i]->operator != NULL && (!strcmp(token_table[i]->operator, "START") || !strcmp(token_table[i]->operator, "CSECT")))
+				{
+					char start[6] = { 0 };
+					int start_addr = 0;
+					int end_addr = 0;
+					if (csect == 0)
+						strcpy(start, "COPY");
+					else if (csect == 1)
+						strcpy(start, "RDREC");
+					else if (csect == 2)
+						strcpy(start, "WRREC");
+					start_addr = token_table[i]->addr;
+					end_addr = endaddr[csect];
+					fprintf(file, "H%-6s%06X%06X\n", start, start_addr, end_addr);
+					break;
+				}
+			}
+
+			//D줄
+			for (int i = check; i < line_num; i++)
+			{
+				if (token_table[i]->operator != NULL && !strcmp(token_table[i]->operator, "EXTDEF") && csect == 0)
+				{
+					fprintf(file, "D");
+					int j = 0;
+					while (j < 3 || token_table[i]->operand[j][0] != 0)
+					{
+						for (int k = 0; k < line_num; k++)
+						{
+							if (!strcmp(token_table[i]->operand[j], sym_table[k]->symbol))
+							{
+								fprintf(file, "%s%06X", sym_table[k]->symbol, sym_table[k]->addr);
+								break;
+							}
+						}
+						j++;
+					}
+					fprintf(file, "\n");
+					break;
+				}
+			}
+
+			//R줄
+			for (int i = check; i < line_num; i++)
+			{
+				if (token_table[i]->operator != NULL && !strcmp(token_table[i]->operator, "EXTREF"))
+				{
+					int j = 0;
+					fprintf(file, "R");
+					while (j < 3 || token_table[i]->operand[j][0] != 0)
+					{
+						for (int k = 0; k < line_num; k++)
+						{
+							if (!strcmp(token_table[i]->operand[j], sym_table[k]->symbol))
+							{
+								fprintf(file, "%-6s", sym_table[k]->symbol);
+								break;
+							}
+						}
+						j++;
+					}
+					fprintf(file, "\n");
+					break;
+				}
+			}
+
+			//T줄
+			int cnt = 0;			// 줄별 길이
+			int ocnt = 0;			// 줄별 시작 명령어 카운트
+			for (int i = check; i < line_num; i++)
+			{
+
+				if (cnt == 0 && object_table[i]->length != 0)
+				{
+					fprintf(file, "T");
+					ocnt = token_table[i]->addr;
+					fprintf(file, "%06X", ocnt);
+					cnt += object_table[i]->length;
+				}
+				else if (cnt != 0 && cnt < 52 / 2 && object_table[i]->length != 0)
+				{
+					cnt += object_table[i]->length;
+
+				}
+				else if (cnt >= 52 / 2 && object_table[i]->length != 0)
+				{
+					fprintf(file, "%02X", cnt);
+					for (int j = ocnt; j < i; j++)
+					{
+
+						if (object_table[j]->length == 1)
+						{
+							fprintf(file, "%02X", object_table[j]->code[0]);
+						}
+						else if (object_table[j]->length == 2)
+						{
+							fprintf(file, "%02X%02X", object_table[j]->code[0], object_table[j]->code[1]);
+						}
+						else if (object_table[j]->length == 3)
+						{
+							fprintf(file, "%02X%02X%02X", object_table[j]->code[0], object_table[j]->code[1], object_table[j]->code[2]);
+
+						}
+						else if (object_table[j]->length == 4)
+						{
+							fprintf(file, "%02X%02X%02X%02X", object_table[j]->code[0], object_table[j]->code[1], object_table[j]->code[2], object_table[j]->code[3]);
+
+						}
+					}
+					cnt = 0;
+					fprintf(file, "\n");
+				}
+
+			}
+
+			//M줄
+			for (int i = check; i < line_num; i++)
+			{
+				if (modify_table[i]->symbol[0] != NULL && token_table[i]->csect == csect)
+				{
+					fprintf(file, "M");
+					if (modify_table[i]->symbol[1] != NULL)
+					{
+						fprintf(file, "%06X", modify_table[i]->addr[0]);
+						fprintf(file, "06+");
+						fprintf(file, "%s\n", modify_table[i]->symbol[0]);
+
+						fprintf(file, "M");
+						fprintf(file, "%06X", modify_table[i]->addr[1]);
+						fprintf(file, "06-");
+						fprintf(file, "%s\n", modify_table[i]->symbol[1]);
+					}
+					else
+					{
+						fprintf(file, "%06X", modify_table[i]->addr[0]);
+						if (!strncmp(token_table[i]->operator, "+", 1))
+							fprintf(file, "05+");
+						else
+							fprintf(file, "03+");
+						fprintf(file, "%s\n", modify_table[i]->symbol[0]);
+					}
+				}
+			}
+
+			//E줄 
+			for (int i = check; i < line_num; i++)
+			{
+				if (token_table[i]->operator != NULL && !strcmp(token_table[i]->operator, "END"))
+				{
+					fprintf(file, "E\n\n");
+					csect++;
+					break;
+				}
+
+			}
+		}
+	
+	fclose(file);
 }
